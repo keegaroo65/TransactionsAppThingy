@@ -1,5 +1,6 @@
 package com.example.transactions
 
+import android.content.Context
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -15,6 +16,10 @@ import com.example.transactions.ui.theme.TransactionsTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        val context: Context = applicationContext
+
+        HistoryTracker.Load(context)
+
         setContent {
             TransactionsTheme {
                 MainContainer()

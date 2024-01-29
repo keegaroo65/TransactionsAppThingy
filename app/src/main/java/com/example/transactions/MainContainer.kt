@@ -82,7 +82,7 @@ fun MainContainer() {
             composable(
                 route = NAV_HOME + "/newTransaction"
             ) {
-                NewTransaction()
+                NewTransaction(navController)
             }
         }
     }
