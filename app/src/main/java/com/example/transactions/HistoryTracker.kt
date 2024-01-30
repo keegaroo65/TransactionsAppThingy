@@ -45,6 +45,8 @@ class HistoryTracker {
             Budget.Load(balance, savings)
         }
 
+        //fun GetHistory()
+
         /*  Types:
 
             1 - Add balance
