@@ -16,11 +16,59 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
+import java.text.SimpleDateFormat
+import kotlin.math.abs
+import kotlin.math.floor
 
 class Utility {
     companion object {
         fun time(): Long {
             return System.currentTimeMillis()
+        }
+
+        fun formatMoney(
+            money: Double
+        ): String {
+            // Format the double as currency text (exactly 2 decimal places)
+            var text = String.format("$%.2f", abs(money))
+
+            // Add the - before the $ if the balance is negative
+            if (money < 0.0) {
+                text = "-" + text
+            }
+
+            return text
+        }
+
+        fun readableDate(
+            then: Long
+        ): String {
+            val now = time()
+
+            // Time from then until now converted to seconds (from milliseconds)
+            val delta = ((now - then) / 1000).toDouble()
+
+            var text: String
+
+            Log.i("hi","delta $delta")
+
+            if (delta < 10) {
+                text = "now"
+            }
+            else if (delta < 60*60) {
+                text = SimpleDateFormat("h:mm a").format(then)
+            }
+            else if (delta < 60*60*24) {
+                text = SimpleDateFormat("EEEE 'at' h:mm a").format(then)
+            }
+            else if (delta < 60*60*24*7) {
+                text = SimpleDateFormat("EEEE d 'at' h:mm a").format(then)
+            }
+            else {
+                text = SimpleDateFormat("yyyy EEEE MMM d 'at' h:mm a").format(then)
+            }
+
+            return text
         }
     }
 }

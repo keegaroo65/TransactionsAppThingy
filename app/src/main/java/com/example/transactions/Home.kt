@@ -40,13 +40,7 @@ fun Home(
     var balance = Budget.balance
     var negBudget = balance.doubleValue < 0.0
 
-    // Format the double as currency text (exactly 2 decimal places)
-    var budget = String.format("$%.2f",abs(balance.doubleValue))
-
-    // Add the - BEFORE the $ if the balance is negative
-    if (negBudget) {
-        budget = "-" + budget
-    }
+    var budget = Utility.formatMoney(balance.value)
 
     Column(
         modifier = Modifier

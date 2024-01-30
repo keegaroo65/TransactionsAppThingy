@@ -7,7 +7,7 @@ import androidx.compose.ui.tooling.preview.Preview
 @Composable
 fun Settings() {
     Text(
-        "hi settings!"
+        "hi!\npretend there are all kinds of silly lil settings here 💜"
     )
 }
 

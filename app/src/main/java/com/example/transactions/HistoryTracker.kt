@@ -18,7 +18,7 @@ class HistoryTracker {
         ) {
             // Initialize the path variable for future use
             path = context.filesDir
-            Log.i("HistoryTracker", path.toString())
+            //Log.i("HistoryTracker", path.toString())
 
             // Initialize the file if it doesn't exist
             val statsFile = File(path, STATS_PATH)
@@ -43,12 +43,59 @@ class HistoryTracker {
             val savings = lines[2].toDouble()
 
             Budget.Load(balance, savings)
+
+            Save()
         }
 
-        //fun GetHistory()
+        // TODO: add time-range specific/max number (etc) methods to improve performance
+        // TODO: investigate what an ArrayList is vs List
+        fun GetAllHistory(): ArrayList<TransactionLog> {
+            /*val historyFile = """1706579373459;2;249.99;many cookies!
+1706423344619;2;0.02;hi
+1705858140000;3;96.75;bus pass mayhaps
+1705344789000;1;20.0;for clothing from mom
+1695877020000;3;35.0;new years
+1653306369000;4;428.19;pc stuff
+1653305369000;1;5.29;filler
+1653205369000;1;5.29;filler1
+1653105369000;1;5.29;filler2
+1653005369000;1;5.29;filler3
+1652305369000;1;5.29;filler4
+1651305369000;1;5.29;filler5
+1650305369000;1;5.29;filler6
+1643305369000;1;5.29;filler7
+1633305369000;1;5.29;filler8
+1623305369000;1;5.29;filler9
+1613305369000;1;5.29;filler10
+1603305369000;1;5.29;filler11
+1553305369000;1;5.29;filler12"""*/
+            val historyFile = File(path, HISTORY_PATH)
+
+            //File(path, HISTORY_PATH).writeText(historyFile)
+
+            var transactions = ArrayList<TransactionLog>(5)
+
+            //historyFile.split("\n").forEach{
+            historyFile.forEachLine{
+                if (it.isNotEmpty()) {
+                    // Format: timestamp;type;amount;reason - 0;1;2;3
+                    val arguments = it.split(";")
+
+                    transactions.add(TransactionLog(
+                        arguments[1].toInt(),
+                        arguments[2].toDouble(),
+                        arguments[3],
+                        arguments[0].toLong()
+                    ))
+                }
+            }
+
+            Log.i("trans",transactions.toString())
+
+            return transactions
+        }
 
         /*  Types:
-
             1 - Add balance
             2 - Spend balance
             3 - Move to savings
@@ -77,3 +124,10 @@ class HistoryTracker {
         }
     }
 }
+
+data class TransactionLog(
+    val type: Int,
+    val amount: Double,
+    val reason: String,
+    val timestamp: Long
+)

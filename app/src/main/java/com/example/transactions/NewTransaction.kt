@@ -14,11 +14,19 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.outlined.AttachMoney
+import androidx.compose.material.icons.outlined.Redeem
+import androidx.compose.material.icons.outlined.Savings
+import androidx.compose.material.icons.outlined.ShoppingCartCheckout
 import androidx.compose.material3.Card
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -34,12 +42,14 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.FocusState
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role.Companion.Switch
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -47,10 +57,18 @@ import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import java.text.DecimalFormat
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun NewTransaction(
     navController: NavController
 ) {
+    val typeOptions = listOf(
+        Icons.Outlined.Redeem,
+        Icons.Outlined.AttachMoney,
+        Icons.Outlined.Savings,
+        Icons.Outlined.ShoppingCartCheckout
+    )
+
     // These 4 are for turning the text fields red if opened then closed without inputting valid value
     var purchaseTouched = remember { mutableStateOf(false) }
     var purchaseOpened = remember { mutableStateOf(false) }
@@ -69,19 +87,8 @@ fun NewTransaction(
     var amountCursor = remember { mutableStateOf(0) }
     var amountField = remember { mutableStateOf(TextFieldValue("")) }
 
-    //var capturePurchase = remember { mutableStateOf(false) }
-    //var captureAmount = remember { mutableStateOf(false) }
-
-    /*
-    val purchaseInteractionSource = remember { MutableInteractionSource() }
-    val purchaseIsFocused by purchaseInteractionSource.collectIsFocusedAsState()
-
-    val amountInteractionSource = remember { MutableInteractionSource() }
-    val amountIsFocused by amountInteractionSource.collectIsFocusedAsState()
-     */
-
     // These 3 are for tracking the 3 inputs when logging a new transaction
-    var toSavings by remember { mutableStateOf(false) }
+    var tranType by remember { mutableStateOf(1) }
     var purchase by remember { mutableStateOf("")}
     var amountText by remember { mutableStateOf("") }
 
@@ -102,11 +109,6 @@ fun NewTransaction(
                 amountTouched.value = true
         }
         .focusRequester(amountFocus)
-
-    /*if (capturePurchase.value) {
-        purchaseModifier = purchaseModifier
-            .captureFocus()
-    }*/
 
     Card(
         modifier = Modifier
@@ -130,7 +132,48 @@ fun NewTransaction(
                     style = MaterialTheme.typography.titleLarge,
                     textDecoration = TextDecoration.Underline
                 )
-                Row(
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    SingleChoiceSegmentedButtonRow {
+                        typeOptions.forEachIndexed { index, icon ->
+                            SegmentedButton(
+                                shape = SegmentedButtonDefaults.itemShape(index = index, count = typeOptions.size),
+                                onClick = { tranType = index },
+                                /*icon = {
+                                    SegmentedButtonDefaults.Icon(active = index == tranType) {
+                                        Icon(
+                                            imageVector = icon,
+                                            contentDescription = "",
+                                            tint = Color.Cyan,
+                                            modifier = Modifier.size(SegmentedButtonDefaults.IconSize)
+                                        )
+                                    }
+                                },*/
+                                selected = index == tranType
+                            ) {
+                                Icon(
+                                    imageVector = icon,
+                                    contentDescription = "",
+                                    //tint = Color.Cyan,
+                                    modifier = Modifier.size(SegmentedButtonDefaults.IconSize)
+                                )
+                            }
+                        }
+                    }
+                    Text(
+                        modifier = Modifier
+                            .padding(5.dp),
+                        textAlign = TextAlign.Center,
+                        text = when (tranType) {
+                            0 -> "Add balance"
+                            1 -> "Spend balance"
+                            2 -> "Move to savings"
+                            else -> "Spend savings"
+                        }
+                    )
+                }
+                /*Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
@@ -155,7 +198,7 @@ fun NewTransaction(
                             null
                         }
                     )
-                }
+                }*/
                 OutlinedTextField(
                     modifier = purchaseModifier,
                     value = purchase,
@@ -163,20 +206,13 @@ fun NewTransaction(
                     placeholder = { Text("Purchase") },
                     isError = purchaseTouched.value && !validPurchase.value,
                     onValueChange = {
-                        purchase = it
+                        purchase = it.replace(";", "")
                         validPurchase.value = purchase.isNotEmpty()
                     },
-                    //interactionSource = purchaseInteractionSource
                 )
                 OutlinedTextField(
                     modifier = amountModifier,
-                    //value = amountText,
                     value = amountText,
-                    /*if (amount != 0.0)
-                        amount.toString()//String.format("$%.2f", amount)//DecimalFormat("$ .00").format(amount) TODO: investigate lol
-                    else
-                        "",*/
-                    //value = amountField,
                     label = { Text("Amount") },
                     placeholder = { Text("Amount") },
                     isError = amountTouched.value && !validAmount.value,
@@ -203,16 +239,10 @@ fun NewTransaction(
                         }
                     },
                     visualTransformation = MoneyTransformation(),
-                    /*cursorPosition = amountCursor,
-                    onCursorPositionChange = {
-                        TODO: cry about this stupid cursor shit i dont wanna have to make a TextFieldValue :(
-                        enough spaghetti already </3. i think all it needs to do is set cursor to end when first digit typed !!
-                    },*/
-                    //interactionSource = amountInteractionSource,
                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 )
             }
-            FloatingActionButton( // TODO: make this appear and work lol
+            FloatingActionButton(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(25.dp),
@@ -227,8 +257,8 @@ fun NewTransaction(
                     }
                     else {
                         Budget.NewTransaction(
-                            type = if (toSavings) 3 else 2,
-                            amount = amountText.toDouble(),
+                            type = tranType + 1,
+                            amount = amountText.toDouble() / 100,
                             reason = purchase
                         )
 
