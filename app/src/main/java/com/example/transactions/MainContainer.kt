@@ -61,7 +61,7 @@ fun MainContainer() {
         NavHost(
             modifier = Modifier.padding(innerPadding),
             navController = navController,
-            startDestination = "home"
+            startDestination = NAV_HOME
         ) {
             composable(
                 route = NAV_HOME

@@ -83,8 +83,9 @@ class HistoryTracker {
 
                     transactions.add(TransactionLog(
                         arguments[1].toInt(),
-                        arguments[2].toDouble(),
-                        arguments[3],
+                        arguments[2].toInt(),
+                        arguments[3].toDouble(),
+                        arguments[4],
                         arguments[0].toLong()
                     ))
                 }
@@ -103,13 +104,14 @@ class HistoryTracker {
          */
         fun LogTransaction(
             type: Int,
+            category: Int,
             amount: Double,
             reason: String
         ) {
             val historyFile = File(path, HISTORY_PATH)
 
             historyFile.writeBytes(
-                "${Utility.time()};$type;$amount;$reason\n".toByteArray() +
+                "${Utility.time()};$type;$category;$amount;$reason\n".toByteArray() +
                         if (historyFile.exists()) historyFile.readBytes() else ByteArray(0)
             )
         }
@@ -121,12 +123,43 @@ class HistoryTracker {
             statsFile.writeText(
                 "${Utility.time()}\n${Budget.balance.value}\n${Budget.savings.value}"
             )
+
+            var historyFile = File(path, HISTORY_PATH)
+
+            historyFile.writeText("""1714500623483;1;10;6.0;hfg
+1707843171638;3;10;80.03;Venmo to me :)
+1706735756874;1;10;725.0;sold ur mom
+1706735726365;3;10;2.06;hi
+1706735489722;2;10;694.2;that ass
+1706646384704;2;10;32.75;lil macs
+1706635330660;1;10;67.25;yippee
+1706588154362;0;10;21.56;chez!!
+1706579373459;2;10;249.99;many cookies!
+1706423344619;2;10;0.02;hi
+1705858140000;3;10;96.75;bus pass mayhaps
+1705344789000;1;10;20.0;for clothing from mom
+1695877020000;3;10;35.0;new years
+1653306369000;4;10;428.19;pc stuff
+1653305369000;1;10;5.29;filler
+1653205369000;1;10;5.29;filler1
+1653105369000;1;10;5.29;filler2
+1653005369000;1;10;5.29;filler3
+1652305369000;1;10;5.29;filler4
+1651305369000;1;10;5.29;filler5
+1650305369000;1;10;5.29;filler6
+1643305369000;1;10;5.29;filler7
+1633305369000;1;10;5.29;filler8
+1623305369000;1;10;5.29;filler9
+1613305369000;1;10;5.29;filler10
+1603305369000;1;10;5.29;filler11
+1553305369000;1;10;5.29;filler12""")
         }
     }
 }
 
 data class TransactionLog(
     val type: Int,
+    val category: Int,
     val amount: Double,
     val reason: String,
     val timestamp: Long

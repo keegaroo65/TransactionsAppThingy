@@ -5,6 +5,25 @@ import androidx.compose.runtime.mutableDoubleStateOf
 
 class Budget {
     companion object {
+        val TransactionReasons = arrayOf(
+            "Emergency",
+            "Games/Toys",
+            "Giving",
+            "Groceries",
+            "Housing",
+            "Housing Bills",
+            "Insurance",
+            "Investing",
+            "Maintenance",
+            "Online",
+            "Phone & WiFi",
+            "Quick Food",
+            "Recreation",
+            "Saving",
+            "Snacks",
+            "Transportation"
+        )
+
         var balance = mutableDoubleStateOf(0.0)
             private set
 
@@ -64,7 +83,7 @@ class Budget {
             }
 
             HistoryTracker.LogTransaction(
-                type, amount, reason
+                type, 10, amount, reason
             )
         }
 

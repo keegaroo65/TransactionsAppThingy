@@ -83,14 +83,14 @@ fun NewTransaction(
     var purchaseFocus = remember { FocusRequester() }
     var amountFocus = remember { FocusRequester() }
 
-    // This tracks the cursor in the amount field to smoothly type currency values
-    var amountCursor = remember { mutableStateOf(0) }
-    var amountField = remember { mutableStateOf(TextFieldValue("")) }
-
     // These 3 are for tracking the 3 inputs when logging a new transaction
     var tranType by remember { mutableStateOf(1) }
     var purchase by remember { mutableStateOf("")}
     var amountText by remember { mutableStateOf("") }
+
+    // This tracks the cursor in the amount field to smoothly type currency values
+    var amountCursor = remember { mutableStateOf(0) }
+    var amountField = remember { mutableStateOf(TextFieldValue("")) }
 
     var purchaseModifier = Modifier
         .onFocusChanged {
