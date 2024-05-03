@@ -15,13 +15,18 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.AttachMoney
+import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Redeem
 import androidx.compose.material.icons.outlined.Savings
 import androidx.compose.material.icons.outlined.ShoppingCartCheckout
 import androidx.compose.material3.Card
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedButton
@@ -30,6 +35,7 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -83,14 +89,18 @@ fun NewTransaction(
     var purchaseFocus = remember { FocusRequester() }
     var amountFocus = remember { FocusRequester() }
 
-    // These 3 are for tracking the 3 inputs when logging a new transaction
+    // These 3 are for tracking the 3 inputs when using this entire NewTransaction menu
     var tranType by remember { mutableStateOf(1) }
+    var categoryChosen by remember { mutableStateOf(11) } // defaults to Quick Food (11)
     var purchase by remember { mutableStateOf("")}
     var amountText by remember { mutableStateOf("") }
 
     // This tracks the cursor in the amount field to smoothly type currency values
     var amountCursor = remember { mutableStateOf(0) }
     var amountField = remember { mutableStateOf(TextFieldValue("")) }
+
+    // These track the expanded state of the category picker menu
+    var categoryExpanded = remember { mutableStateOf(false) }
 
     var purchaseModifier = Modifier
         .onFocusChanged {
@@ -127,11 +137,13 @@ fun NewTransaction(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.SpaceEvenly
             ) {
+                // Title text
                 Text(
                     text = "New Transaction",
                     style = MaterialTheme.typography.titleLarge,
                     textDecoration = TextDecoration.Underline
                 )
+                // Segmented button to pick between 4 transaction types
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -173,6 +185,39 @@ fun NewTransaction(
                         }
                     )
                 }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        modifier = Modifier
+                            .padding(10.dp),
+                        text = "Category"
+                    )
+                    DropdownMenu(
+                        expanded = categoryExpanded.value,
+                        onDismissRequest = {
+                            categoryExpanded.value = false
+                        }
+                    ) {
+                        Budget.TransactionCategories.forEachIndexed { index, category ->
+                            DropdownMenuItem(
+                                text = { Text(category) },
+                                onClick = {
+                                    categoryChosen = index
+                                    categoryExpanded.value = false
+                                }
+                            )
+                        }
+                    }
+                    ElevatedButton(
+                        onClick = {
+                            categoryExpanded.value = true
+                        }
+                    ) {
+                        Icon(Icons.Outlined.ExpandMore, "dropdown")
+                        Text(Budget.TransactionCategories[categoryChosen])
+                    }
+                }
                 /*Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -199,6 +244,7 @@ fun NewTransaction(
                         }
                     )
                 }*/
+                // Purchase text input field
                 OutlinedTextField(
                     modifier = purchaseModifier,
                     value = purchase,
@@ -210,6 +256,7 @@ fun NewTransaction(
                         validPurchase.value = purchase.isNotEmpty()
                     },
                 )
+                // Amount text input field
                 OutlinedTextField(
                     modifier = amountModifier,
                     value = amountText,
@@ -258,6 +305,7 @@ fun NewTransaction(
                     else {
                         Budget.NewTransaction(
                             type = tranType + 1,
+                            category = categoryChosen,
                             amount = amountText.toDouble() / 100,
                             reason = purchase
                         )

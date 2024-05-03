@@ -120,13 +120,13 @@ class MoneyOffsetMapping: OffsetMapping {
 
         if (offset <= 0) {
             if (textLen <= 0) {
-                Log.i("offset", "B$offset $offset $textLen")
+                //Log.i("offset", "B$offset $offset $textLen")
                 return offset
             }
             else if (textLen > 2)
                 return 1
             else {
-                Log.i("offset", "B$offset ${textLen - 1} $textLen")
+                //Log.i("offset", "B$offset ${textLen - 1} $textLen")
                 return tranLen - textLen
             }
         }
