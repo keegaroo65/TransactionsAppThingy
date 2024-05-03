@@ -3,15 +3,13 @@ package com.example.transactions
 import android.content.Context
 import android.util.Log
 import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
 
 class HistoryTracker {
     companion object {
-        val STATS_PATH = "stats.txt"
-        val HISTORY_PATH = "history.txt"
+        private const val STATS_PATH = "stats.txt"
+        private const val HISTORY_PATH = "history.txt"
 
-        var path: File? = null
+        private var path: File? = null
 
         fun Load(
             context: Context
@@ -73,7 +71,7 @@ class HistoryTracker {
 
             //File(path, HISTORY_PATH).writeText(historyFile)
 
-            var transactions = ArrayList<TransactionLog>(5)
+            val transactions = ArrayList<TransactionLog>(5)
 
             //historyFile.split("\n").forEach{
             historyFile.forEachLine{
@@ -117,7 +115,7 @@ class HistoryTracker {
         }
 
         fun Save() {
-            var statsFile = File(path, STATS_PATH)
+            val statsFile = File(path, STATS_PATH)
 
             // Overwrite the stats file with the latest stats
             statsFile.writeText(

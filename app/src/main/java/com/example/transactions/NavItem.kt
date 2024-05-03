@@ -16,21 +16,21 @@ sealed class NavItem(
     val unselectedIcon: ImageVector,
     val selectedIcon: ImageVector
 ) {
-    object Home: NavItem(
+    data object Home: NavItem(
         R.string.homeTitle,
         R.string.homeRoute,
         Icons.Outlined.Home,
         Icons.Filled.Home
     )
 
-    object History: NavItem(
+    data object History: NavItem(
         R.string.historyTitle,
         R.string.historyRoute,
         Icons.Outlined.Analytics,
         Icons.Filled.Analytics
     )
 
-    object Settings: NavItem(
+    data object Settings: NavItem(
         R.string.settingsTitle,
         R.string.settingsRoute,
         Icons.Outlined.Settings,

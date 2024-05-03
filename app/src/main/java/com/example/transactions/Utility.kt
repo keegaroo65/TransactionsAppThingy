@@ -1,24 +1,12 @@
 package com.example.transactions
 
 import android.util.Log
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CardElevation
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import java.text.SimpleDateFormat
 import kotlin.math.abs
-import kotlin.math.floor
 
 class Utility {
     companion object {
@@ -34,7 +22,7 @@ class Utility {
 
             // Add the - before the $ if the balance is negative
             if (money < 0.0) {
-                text = "-" + text
+                text = "-$text"
             }
 
             return text
@@ -48,24 +36,18 @@ class Utility {
             // Time from then until now converted to seconds (from milliseconds)
             val delta = ((now - then) / 1000).toDouble()
 
-            var text: String
-
             Log.i("hi","delta $delta")
 
-            if (delta < 10) {
-                text = "now"
-            }
-            else if (delta < 60*60) {
-                text = SimpleDateFormat("h:mm a").format(then)
-            }
-            else if (delta < 60*60*24) {
-                text = SimpleDateFormat("EEEE 'at' h:mm a").format(then)
-            }
-            else if (delta < 60*60*24*7) {
-                text = SimpleDateFormat("EEEE d 'at' h:mm a").format(then)
-            }
-            else {
-                text = SimpleDateFormat("yyyy EEEE MMM d 'at' h:mm a").format(then)
+            val text: String = if (delta < 10) {
+                "now"
+            } else if (delta < 60*60) {
+                SimpleDateFormat("h:mm a").format(then)
+            } else if (delta < 60*60*24) {
+                SimpleDateFormat("EEEE 'at' h:mm a").format(then)
+            } else if (delta < 60*60*24*7) {
+                SimpleDateFormat("EEEE d 'at' h:mm a").format(then)
+            } else {
+                SimpleDateFormat("yyyy EEEE MMM d 'at' h:mm a").format(then)
             }
 
             return text
@@ -93,11 +75,11 @@ class MoneyTransformation: VisualTransformation {
                 dec = len - 2
             }
             else if (len == 2) {
-                transformedText = "$0." + ogText
+                transformedText = "$0.$ogText"
                 dec = len - 1
             }
             else {
-                transformedText = "$0.0" + ogText
+                transformedText = "$0.0$ogText"
             }
         }
 
@@ -119,30 +101,27 @@ class MoneyOffsetMapping: OffsetMapping {
         var new = offset
 
         if (offset <= 0) {
-            if (textLen <= 0) {
+            return if (textLen <= 0) {
                 //Log.i("offset", "B$offset $offset $textLen")
-                return offset
-            }
-            else if (textLen > 2)
-                return 1
+                offset
+            } else if (textLen > 2)
+                1
             else {
                 //Log.i("offset", "B$offset ${textLen - 1} $textLen")
-                return tranLen - textLen
+                tranLen - textLen
             }
         }
 
-        if (textLen > 2) {
+        new = if (textLen > 2) {
             //new = offset + 1
-            new = if (offset < textLen - 1)
+            if (offset < textLen - 1)
                 offset + 1
             else
                 offset + 2
-        }
-        else if (textLen == 2) {
-            new = offset + 3
-        }
-        else {
-            new = 5
+        } else if (textLen == 2) {
+            offset + 3
+        } else {
+            5
         }
 
         Log.i("offset", "B$offset $new $textLen")
@@ -192,7 +171,7 @@ class MoneyOffsetMapping: OffsetMapping {
     }
 }
 
-@Composable
+/*@Composable
 fun CenterCard(
     modifier: Modifier = Modifier,
     shape: Shape = CardDefaults.shape,
@@ -205,8 +184,8 @@ fun CenterCard(
         modifier,
         contentAlignment = Alignment.Center,
     ) {
-        Card() {
+        Card {
             content()
         }
     }
-}
+}*/

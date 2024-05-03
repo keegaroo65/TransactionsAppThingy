@@ -52,7 +52,7 @@ class Budget {
             Save()
         }
 
-        fun MoveToSavings(
+        private fun MoveToSavings(
             amount: Double
         ) {
             balance.value -= amount
@@ -60,7 +60,7 @@ class Budget {
             Save()
         }
 
-        fun SpendSavings(
+        private fun SpendSavings(
             amount: Double
         ) {
             savings.value -= amount
@@ -88,7 +88,7 @@ class Budget {
             )
         }
 
-        fun Save() {
+        private fun Save() {
             HistoryTracker.Save()
         }
     }

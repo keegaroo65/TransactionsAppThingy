@@ -36,12 +36,10 @@ fun AppBottomNavigation(
 
             val selected = currentRoute == navRoute
 
-            val icon: ImageVector
-            if (selected) {
-                icon = item.selectedIcon
-            }
-            else {
-                icon = item.unselectedIcon
+            val icon: ImageVector = if (selected) {
+                item.selectedIcon
+            } else {
+                item.unselectedIcon
             }
 
             NavigationBarItem(
