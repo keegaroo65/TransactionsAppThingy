@@ -21,8 +21,6 @@ import androidx.compose.ui.tooling.preview.Preview
 fun History(
 
 ){
-
-
     Column (
         modifier = Modifier
             .verticalScroll(rememberScrollState())

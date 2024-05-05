@@ -31,7 +31,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,31 +60,31 @@ fun NewTransaction(
     )
 
     // These 4 are for turning the text fields red if opened then closed without inputting valid value
-    val purchaseTouched = remember { mutableStateOf(false) }
-    val purchaseOpened = remember { mutableStateOf(false) }
-    val amountTouched = remember { mutableStateOf(false) }
-    val amountOpened = remember { mutableStateOf(false) }
+    val purchaseTouched = rememberSaveable { mutableStateOf(false) }
+    val purchaseOpened = rememberSaveable { mutableStateOf(false) }
+    val amountTouched = rememberSaveable { mutableStateOf(false) }
+    val amountOpened = rememberSaveable { mutableStateOf(false) }
 
     // These 2 are for showing an error field
-    val validPurchase = remember { mutableStateOf(false) }
-    val validAmount = remember { mutableStateOf(false) }
+    val validPurchase = rememberSaveable { mutableStateOf(false) }
+    val validAmount = rememberSaveable { mutableStateOf(false) }
 
     // These 2 are for forcing capture on invalid TextFields
-    val purchaseFocus = remember { FocusRequester() }
-    val amountFocus = remember { FocusRequester() }
+    val purchaseFocus = rememberSaveable { FocusRequester() }
+    val amountFocus = rememberSaveable { FocusRequester() }
 
     // These 3 are for tracking the 3 inputs when using this entire NewTransaction menu
-    var tranType by remember { mutableStateOf(1) }
-    var categoryChosen by remember { mutableStateOf(11) } // defaults to Quick Food (11)
-    var purchase by remember { mutableStateOf("")}
-    var amountText by remember { mutableStateOf("") }
+    var tranType by rememberSaveable { mutableStateOf(1) }
+    var categoryChosen by rememberSaveable { mutableStateOf(11) } // defaults to Quick Food (11)
+    var purchase by rememberSaveable { mutableStateOf("")}
+    var amountText by rememberSaveable { mutableStateOf("") }
 
     // This tracks the cursor in the amount field to smoothly type currency values
-    var amountCursor = remember { mutableStateOf(0) }
-    var amountField = remember { mutableStateOf(TextFieldValue("")) }
+    var amountCursor = rememberSaveable { mutableStateOf(0) }
+    var amountField = rememberSaveable { mutableStateOf(TextFieldValue("")) }
 
     // These track the expanded state of the category picker menu
-    val categoryExpanded = remember { mutableStateOf(false) }
+    val categoryExpanded = rememberSaveable { mutableStateOf(false) }
 
     val purchaseModifier = Modifier
         .onFocusChanged {
