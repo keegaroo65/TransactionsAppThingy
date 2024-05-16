@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.outlined.ArrowCircleRight
 import androidx.compose.material.icons.outlined.AttachMoney
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Redeem
@@ -28,9 +29,11 @@ import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -39,13 +42,14 @@ import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -70,28 +74,29 @@ fun NewTransaction(
     val validAmount = rememberSaveable { mutableStateOf(false) }
 
     // These 2 are for forcing capture on invalid TextFields
-    val purchaseFocus = rememberSaveable { FocusRequester() }
-    val amountFocus = rememberSaveable { FocusRequester() }
+    val purchaseFocus = remember { FocusRequester() }
+    val amountFocus = remember { FocusRequester() }
 
-    // These 3 are for tracking the 3 inputs when using this entire NewTransaction menu
+    // These 5 are for tracking the 5 inputs when using this entire NewTransaction menu
+    var modTimestamp by rememberSaveable { mutableStateOf(LocalDateTime.MIN) }
     var tranType by rememberSaveable { mutableStateOf(1) }
     var categoryChosen by rememberSaveable { mutableStateOf(11) } // defaults to Quick Food (11)
     var purchase by rememberSaveable { mutableStateOf("")}
     var amountText by rememberSaveable { mutableStateOf("") }
 
     // This tracks the cursor in the amount field to smoothly type currency values
-    var amountCursor = rememberSaveable { mutableStateOf(0) }
-    var amountField = rememberSaveable { mutableStateOf(TextFieldValue("")) }
+//    var amountCursor = rememberSaveable { mutableStateOf(0) }
+//    var amountField = rememberSaveable { mutableStateOf(TextFieldValue("")) }
 
     // These track the expanded state of the category picker menu
     val categoryExpanded = rememberSaveable { mutableStateOf(false) }
 
     val purchaseModifier = Modifier
         .onFocusChanged {
-        if (it.isFocused)
-            purchaseOpened.value = true
-        else if (purchaseOpened.value)
-            purchaseTouched.value = true
+            if (it.isFocused)
+                purchaseOpened.value = true
+            else if (purchaseOpened.value)
+                purchaseTouched.value = true
         }
         .focusRequester(purchaseFocus)
 
@@ -107,8 +112,7 @@ fun NewTransaction(
     Card(
         modifier = Modifier
             .fillMaxSize()
-            .padding(15.dp),
-
+            .padding(15.dp)
     ) {
         Box(
             modifier = Modifier
@@ -127,6 +131,37 @@ fun NewTransaction(
                     style = MaterialTheme.typography.titleLarge,
                     textDecoration = TextDecoration.Underline
                 )
+
+                Column() {
+                    if (modTimestamp != LocalDateTime.MIN) {
+                        Text(
+                            modTimestamp.toString() + "\n" + modTimestamp.toEpochSecond(ZoneOffset.UTC)
+                        )
+                    }
+
+                    // Edit timestamp dialogue opener
+                    TextButton(
+                        onClick = {
+                            modTimestamp = LocalDateTime.of(
+                                2024,
+                                2,
+                                10,
+                                16,
+                                50
+                            )
+                        }
+                    ) {
+                        Text(
+                            text = "Edit time",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
+                        Icon(
+                            Icons.Outlined.ArrowCircleRight,
+                            "Edit time button"
+                        )
+                    }
+                }
+
                 // Segmented button to pick between 4 transaction types
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
