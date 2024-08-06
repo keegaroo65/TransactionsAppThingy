@@ -1,4 +1,4 @@
-package com.example.transactions
+package com.example.transactions.ui.newTransaction
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,30 +31,48 @@ import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
+import com.example.transactions.MoneyTransformation
+import com.example.transactions.Utility
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 
-@OptIn(ExperimentalMaterial3Api::class)
+
 @Composable
 fun NewTransaction(
-    navController: NavController
+    viewModel: NewTransactionViewModel,
+    navigateHome: () -> Unit
+) {
+    val uiState = viewModel.uiState.collectAsState().value
+
+    TransactionEditScreen(
+        uiState.existingTransaction == null,
+        viewModel,
+        uiState,
+        navigateHome
+    )
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun TransactionEditScreen(
+    isNew: Boolean,
+    viewModel: NewTransactionViewModel,
+    uiState: NewTransactionUiState,
+    navigateBack: () -> Unit
 ) {
     val typeOptions = listOf(
         Icons.Outlined.Redeem,
@@ -64,32 +82,21 @@ fun NewTransaction(
     )
 
     // These 4 are for turning the text fields red if opened then closed without inputting valid value
-    val purchaseTouched = rememberSaveable { mutableStateOf(false) }
-    val purchaseOpened = rememberSaveable { mutableStateOf(false) }
-    val amountTouched = rememberSaveable { mutableStateOf(false) }
-    val amountOpened = rememberSaveable { mutableStateOf(false) }
-
-    // These 2 are for showing an error field
-    val validPurchase = rememberSaveable { mutableStateOf(false) }
-    val validAmount = rememberSaveable { mutableStateOf(false) }
+    val purchaseTouched = rememberSaveable { mutableStateOf(!isNew) }
+    val purchaseOpened = rememberSaveable { mutableStateOf(!isNew) }
+    val amountTouched = rememberSaveable { mutableStateOf(!isNew) }
+    val amountOpened = rememberSaveable { mutableStateOf(!isNew) }
 
     // These 2 are for forcing capture on invalid TextFields
     val purchaseFocus = remember { FocusRequester() }
     val amountFocus = remember { FocusRequester() }
 
     // These 5 are for tracking the 5 inputs when using this entire NewTransaction menu
-    var modTimestamp by rememberSaveable { mutableStateOf(LocalDateTime.MIN) }
-    var tranType by rememberSaveable { mutableStateOf(1) }
-    var categoryChosen by rememberSaveable { mutableStateOf(11) } // defaults to Quick Food (11)
-    var purchase by rememberSaveable { mutableStateOf("")}
-    var amountText by rememberSaveable { mutableStateOf("") }
+
 
     // This tracks the cursor in the amount field to smoothly type currency values
 //    var amountCursor = rememberSaveable { mutableStateOf(0) }
 //    var amountField = rememberSaveable { mutableStateOf(TextFieldValue("")) }
-
-    // These track the expanded state of the category picker menu
-    val categoryExpanded = rememberSaveable { mutableStateOf(false) }
 
     val purchaseModifier = Modifier
         .onFocusChanged {
@@ -127,28 +134,22 @@ fun NewTransaction(
             ) {
                 // Title text
                 Text(
-                    text = "New Transaction",
+                    text = if (isNew) "New Transaction" else "Edit Transaction",
                     style = MaterialTheme.typography.titleLarge,
                     textDecoration = TextDecoration.Underline
                 )
 
                 Column() {
-                    if (modTimestamp != LocalDateTime.MIN) {
+                    if (uiState.modTimestamp != LocalDateTime.MIN) {
                         Text(
-                            modTimestamp.toString() + "\n" + modTimestamp.toEpochSecond(ZoneOffset.UTC)
+                            uiState.modTimestamp.toString() + "\n" + uiState.modTimestamp.toEpochSecond(ZoneOffset.UTC)
                         )
                     }
 
                     // Edit timestamp dialogue opener
                     TextButton(
                         onClick = {
-                            modTimestamp = LocalDateTime.of(
-                                2024,
-                                2,
-                                10,
-                                16,
-                                50
-                            )
+                            viewModel.openTimestampDialogue()
                         }
                     ) {
                         Text(
@@ -170,7 +171,7 @@ fun NewTransaction(
                         typeOptions.forEachIndexed { index, icon ->
                             SegmentedButton(
                                 shape = SegmentedButtonDefaults.itemShape(index = index, count = typeOptions.size),
-                                onClick = { tranType = index },
+                                onClick = { viewModel.changeTranType(index) },
                                 /*icon = {
                                     SegmentedButtonDefaults.Icon(active = index == tranType) {
                                         Icon(
@@ -181,7 +182,7 @@ fun NewTransaction(
                                         )
                                     }
                                 },*/
-                                selected = index == tranType
+                                selected = index == uiState.tranType
                             ) {
                                 Icon(
                                     imageVector = icon,
@@ -196,7 +197,7 @@ fun NewTransaction(
                         modifier = Modifier
                             .padding(5.dp),
                         textAlign = TextAlign.Center,
-                        text = when (tranType) {
+                        text = when (uiState.tranType) {
                             0 -> "Add balance"
                             1 -> "Spend balance"
                             2 -> "Move to savings"
@@ -213,28 +214,21 @@ fun NewTransaction(
                         text = "Category"
                     )
                     DropdownMenu(
-                        expanded = categoryExpanded.value,
-                        onDismissRequest = {
-                            categoryExpanded.value = false
-                        }
+                        expanded = uiState.categoryExpanded,
+                        onDismissRequest = { viewModel.changeCategoryExpanded(false) }
                     ) {
-                        Budget.TransactionCategories.forEachIndexed { index, category ->
+                        Utility.TransactionCategories.forEachIndexed { index, category ->
                             DropdownMenuItem(
                                 text = { Text(category) },
-                                onClick = {
-                                    categoryChosen = index
-                                    categoryExpanded.value = false
-                                }
+                                onClick = { viewModel.changeCategory(index) }
                             )
                         }
                     }
                     ElevatedButton(
-                        onClick = {
-                            categoryExpanded.value = true
-                        }
+                        onClick = { viewModel.changeCategoryExpanded(true) }
                     ) {
                         Icon(Icons.Outlined.ExpandMore, "dropdown")
-                        Text(Budget.TransactionCategories[categoryChosen])
+                        Text(Utility.TransactionCategories[uiState.category])
                     }
                 }
                 /*Row(
@@ -266,46 +260,28 @@ fun NewTransaction(
                 // Purchase text input field
                 OutlinedTextField(
                     modifier = purchaseModifier,
-                    value = purchase,
+                    value = uiState.purchaseText,
                     label = { Text("Purchase") },
                     placeholder = { Text("Purchase") },
-                    isError = purchaseTouched.value && !validPurchase.value,
-                    onValueChange = {
-                        purchase = it.replace(";", "")
-                        validPurchase.value = purchase.isNotEmpty()
-                    },
+                    isError = purchaseTouched.value && !uiState.validPurchase,
+                    onValueChange = { viewModel.changePurchaseText(it) },
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = ImeAction.Next,
+                    )
                 )
                 // Amount text input field
                 OutlinedTextField(
                     modifier = amountModifier,
-                    value = amountText,
+                    value = uiState.amountText,
                     label = { Text("Amount") },
                     placeholder = { Text("Amount") },
-                    isError = amountTouched.value && !validAmount.value,
-                    onValueChange = { it ->
-                        val newAmountText = it.filter { it.isDigit() }//|| it.equals('.') }
-
-                        //Log.i("amountnum",newAmountText)
-
-                        if (newAmountText.isNotEmpty()) {
-                            amountText = newAmountText
-
-                            val num = amountText.toDouble()
-
-                            if (num > 0)
-                                validAmount.value = true
-                            else {
-                                amountText = ""
-                                validAmount.value = false
-                            }
-                        }
-                        else {
-                            amountText = ""
-                            validAmount.value = false
-                        }
-                    },
+                    isError = amountTouched.value && !uiState.validAmount,
+                    onValueChange = { viewModel.changeAmountText(it) },
                     visualTransformation = MoneyTransformation(),
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = ImeAction.Done,
+                        keyboardType = KeyboardType.Number
+                    ),
                 )
             }
             FloatingActionButton(
@@ -313,23 +289,17 @@ fun NewTransaction(
                     .align(Alignment.BottomEnd)
                     .padding(25.dp),
                 onClick = {
-                    if (!validPurchase.value) {
+                    if (!uiState.validPurchase) {
                         purchaseTouched.value = true
                         purchaseFocus.requestFocus()
                     }
-                    else if (!validAmount.value) {
+                    else if (!uiState.validAmount) {
                         amountTouched.value = true
                         amountFocus.requestFocus()
                     }
                     else {
-                        Budget.NewTransaction(
-                            type = tranType + 1,
-                            category = categoryChosen,
-                            amount = amountText.toDouble() / 100,
-                            reason = purchase
-                        )
-
-                        navController.navigate("home")
+                        viewModel.saveTransaction()
+                        navigateBack()
                     }
                 }
             ) {
@@ -339,10 +309,4 @@ fun NewTransaction(
             }
         }
     }
-}
-
-@Preview
-@Composable
-fun NewTransactionPreview() {
-    NewTransaction(rememberNavController())
 }

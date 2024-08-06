@@ -1,4 +1,4 @@
-package com.example.transactions
+package com.example.transactions.ui.navigation
 
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme

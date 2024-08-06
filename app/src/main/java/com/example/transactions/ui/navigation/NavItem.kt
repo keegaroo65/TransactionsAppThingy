@@ -1,4 +1,4 @@
-package com.example.transactions
+package com.example.transactions.ui.navigation
 
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
@@ -9,6 +9,7 @@ import androidx.compose.material.icons.outlined.Analytics
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.example.transactions.R
 
 sealed class NavItem(
     @StringRes val title: Int,

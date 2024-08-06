@@ -1,15 +1,44 @@
 package com.example.transactions
 
 import android.util.Log
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
+import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.unit.dp
 import java.text.SimpleDateFormat
 import kotlin.math.abs
 
 class Utility {
     companion object {
+        val TransactionCategories = arrayOf(
+            "Emergency",
+            "Games/Toys",
+            "Giving",
+            "Groceries",
+            "Housing",
+            "Housing Bills",
+            "Insurance",
+            "Investing",
+            "Maintenance",
+            "Online",
+            "Phone & WiFi",
+            "Quick Food",
+            "Recreation",
+            "Saving",
+            "Snacks",
+            "Transportation"
+        )
+
         fun time(): Long {
             return System.currentTimeMillis()
         }
@@ -36,7 +65,7 @@ class Utility {
             // Time from then until now converted to seconds (from milliseconds)
             val delta = ((now - then) / 1000).toDouble()
 
-            Log.i("hi","delta $delta")
+            //Log.i("hi","delta $delta")
 
             val text: String = if (delta < 10) {
                 "now"
@@ -51,6 +80,31 @@ class Utility {
             }
 
             return text
+        }
+
+        @Composable
+        fun LoadingPopup() {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                CircularProgressIndicator(
+                    modifier = Modifier
+                        .width(64.dp)
+                )
+            }
+        }
+
+        @Composable
+        fun LoadingPopupCard() {
+            Card(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(15.dp)
+            ) {
+                LoadingPopup()
+            }
         }
     }
 }

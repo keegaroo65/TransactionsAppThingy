@@ -1,4 +1,4 @@
-package com.example.transactions
+package com.example.transactions.ui.settings
 
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
