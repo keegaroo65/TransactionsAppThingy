@@ -19,7 +19,7 @@ import androidx.navigation.compose.rememberNavController
 fun AppBottomNavigation(
     navController: NavController
 ) {
-    val navItems = listOf(NavItem.Home, NavItem.History, NavItem.Settings)
+    val navItems = listOf(NavItem.Home, NavItem.History, NavItem.Recurring, NavItem.Settings)
 
     val containerColor = MaterialTheme.colorScheme.surface
 

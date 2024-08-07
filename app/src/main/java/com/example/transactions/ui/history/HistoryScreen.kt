@@ -108,7 +108,7 @@ fun HistoryCard(
     val reason = transaction.reason
     val timestamp = transaction.timestamp
 
-    val date = Utility.readableDate(timestamp)
+    val date = Utility.readablePastDate(timestamp)
 
     ListItem(
         modifier = Modifier
@@ -140,7 +140,7 @@ fun HistoryCard(
             ) ,
         headlineContent = { Text(reason) },
         supportingContent = { Text(date) },
-        trailingContent = { Text(amount.toString()) },
+        trailingContent = { Text(Utility.formatMoney(amount)) },
         leadingContent = {
             Row(
                 horizontalArrangement = Arrangement.spacedBy(5.dp)

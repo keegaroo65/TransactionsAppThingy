@@ -12,6 +12,8 @@ fun HistoryDetail(
 ) {
     val uiState = viewModel.uiState.collectAsState().value
 
+    // TODO: separate editing & viewing screens for a more pleasurable straight-forward experience
+    // TODO: add delete button from the transaction details OR edit screen
     TransactionEditScreen(
         false,
         viewModel,

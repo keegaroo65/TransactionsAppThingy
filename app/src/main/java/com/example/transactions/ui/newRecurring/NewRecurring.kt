@@ -1,4 +1,4 @@
-package com.example.transactions.ui.newTransaction
+package com.example.transactions.ui.newRecurring
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,16 +10,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.outlined.ArrowCircleRight
-import androidx.compose.material.icons.outlined.AttachMoney
-import androidx.compose.material.icons.outlined.ExpandMore
-import androidx.compose.material.icons.outlined.Redeem
-import androidx.compose.material.icons.outlined.Savings
-import androidx.compose.material.icons.outlined.ShoppingCartCheckout
+import androidx.compose.material.icons.outlined.DateRange
+import androidx.compose.material.icons.outlined.Event
 import androidx.compose.material3.Card
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.ElevatedButton
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -28,8 +21,9 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
@@ -40,63 +34,38 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.transactions.MoneyTransformation
-import com.example.transactions.Utility
-import java.time.LocalDateTime
-import java.time.ZoneOffset
-
-
-@Composable
-fun NewTransaction(
-    viewModel: NewTransactionViewModel,
-    navigateHome: () -> Unit
-) {
-    val uiState = viewModel.uiState.collectAsState().value
-
-    TransactionEditScreen(
-        uiState.existingTransaction == null,
-        viewModel,
-        uiState,
-        navigateHome
-    )
-}
+import com.example.transactions.data.AppDataContainer
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TransactionEditScreen(
-    isNew: Boolean,
-    viewModel: NewTransactionViewModel,
-    uiState: NewTransactionUiState,
+fun NewRecurring(
+    viewModel: NewRecurringViewModel,
     navigateBack: () -> Unit
 ) {
+    val uiState = viewModel.uiState.collectAsState().value
+
     val typeOptions = listOf(
-        Icons.Outlined.Redeem,
-        Icons.Outlined.AttachMoney,
-        Icons.Outlined.Savings,
-        Icons.Outlined.ShoppingCartCheckout
+        Icons.Outlined.Event,
+        Icons.Outlined.DateRange
     )
 
     // These 4 are for turning the text fields red if opened then closed without inputting valid value
-    val purchaseTouched = rememberSaveable { mutableStateOf(!isNew) }
-    val purchaseOpened = rememberSaveable { mutableStateOf(!isNew) }
-    val amountTouched = rememberSaveable { mutableStateOf(!isNew) }
-    val amountOpened = rememberSaveable { mutableStateOf(!isNew) }
+    val purchaseOpened = rememberSaveable { mutableStateOf(false) }
+    val purchaseTouched = rememberSaveable { mutableStateOf(false) }
+    val amountOpened = rememberSaveable { mutableStateOf(false) }
+    val amountTouched = rememberSaveable { mutableStateOf(false) }
 
     // These 2 are for forcing capture on invalid TextFields
     val purchaseFocus = remember { FocusRequester() }
     val amountFocus = remember { FocusRequester() }
-
-    // These 5 are for tracking the 5 inputs when using this entire NewTransaction menu
-
-
-    // This tracks the cursor in the amount field to smoothly type currency values
-//    var amountCursor = rememberSaveable { mutableStateOf(0) }
-//    var amountField = rememberSaveable { mutableStateOf(TextFieldValue("")) }
 
     val purchaseModifier = Modifier
         .onFocusChanged {
@@ -134,36 +103,63 @@ fun TransactionEditScreen(
             ) {
                 // Title text
                 Text(
-                    text = if (isNew) "New Transaction" else "Edit Transaction",
+                    text = "New Recurring Transaction",//if (isNew) "New Recurring" else "Edit Transaction",
                     style = MaterialTheme.typography.titleLarge,
                     textDecoration = TextDecoration.Underline
                 )
 
-                Column() {
-                    if (uiState.modTimestamp != LocalDateTime.MIN) {
-                        Text(
-                            uiState.modTimestamp.toString() + "\n" + uiState.modTimestamp.toEpochSecond(ZoneOffset.UTC)
-                        )
-                    }
+                // Title text input field
+                OutlinedTextField(
+                    modifier = purchaseModifier,
+                    value = uiState.titleText,
+                    label = { Text("Title") },
+                    placeholder = { Text("Title") },
+                    isError = purchaseTouched.value && !uiState.validPurchase,
+                    onValueChange = { viewModel.changeTitleText(it) },
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = ImeAction.Next,
+                    )
+                )
 
-                    // Edit timestamp dialogue opener
-                    TextButton(
-                        onClick = {
-                            viewModel.openTimestampDialogue()
+                // Purchase text input field
+                OutlinedTextField(
+                    modifier = purchaseModifier,
+                    value = uiState.titleText,
+                    label = { Text("Details") },
+                    placeholder = { Text("Details (optional)") },
+                    isError = purchaseTouched.value && !uiState.validPurchase,
+                    onValueChange = { viewModel.changeTitleText(it) },
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = ImeAction.Next,
+                    )
+                )
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text(
+                        "Active",
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    Switch(
+                        checked = true,
+                        onCheckedChange = null,
+                        thumbContent = if (true) {
+                            {
+                                Icon(
+                                    imageVector = Icons.Filled.Check,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(SwitchDefaults.IconSize),
+                                )
+                            }
+                        } else {
+                            null
                         }
-                    ) {
-                        Text(
-                            text = "Edit time",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        Icon(
-                            Icons.Outlined.ArrowCircleRight,
-                            "Edit time button"
-                        )
-                    }
+                    )
                 }
 
-                // Segmented button to pick between 4 transaction types
+                // Segmented button to pick between 2 recurring types
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -171,18 +167,8 @@ fun TransactionEditScreen(
                         typeOptions.forEachIndexed { index, icon ->
                             SegmentedButton(
                                 shape = SegmentedButtonDefaults.itemShape(index = index, count = typeOptions.size),
-                                onClick = { viewModel.changeTranType(index) },
-                                /*icon = {
-                                    SegmentedButtonDefaults.Icon(active = index == tranType) {
-                                        Icon(
-                                            imageVector = icon,
-                                            contentDescription = "",
-                                            tint = Color.Cyan,
-                                            modifier = Modifier.size(SegmentedButtonDefaults.IconSize)
-                                        )
-                                    }
-                                },*/
-                                selected = index == uiState.tranType
+                                onClick = { viewModel.changeType(index) },
+                                selected = index == uiState.type
                             ) {
                                 Icon(
                                     imageVector = icon,
@@ -197,40 +183,87 @@ fun TransactionEditScreen(
                         modifier = Modifier
                             .padding(5.dp),
                         textAlign = TextAlign.Center,
-                        text = when (uiState.tranType) {
-                            0 -> "Add balance"
-                            1 -> "Spend balance"
-                            2 -> "Move to savings"
-                            else -> "Spend savings"
+                        text = when (uiState.type) {
+                            0 -> "Calendar day each month:"
+                            else -> "Period of days:"
                         }
                     )
                 }
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        modifier = Modifier
-                            .padding(10.dp),
-                        text = "Category"
+
+                // Purchase text input field
+                OutlinedTextField(
+                    modifier = purchaseModifier,
+                    value = uiState.titleText,
+                    label = { Text("Period") },
+                    placeholder = { Text("Period") },
+                    isError = purchaseTouched.value && !uiState.validPurchase,
+                    onValueChange = { viewModel.changeTitleText(it) },
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = ImeAction.Next,
                     )
-                    DropdownMenu(
-                        expanded = uiState.categoryExpanded,
-                        onDismissRequest = { viewModel.changeCategoryExpanded(false) }
-                    ) {
-                        Utility.TRANSACTION_CATEGORIES.forEachIndexed { index, category ->
-                            DropdownMenuItem(
-                                text = { Text(category) },
-                                onClick = { viewModel.changeCategory(index) }
-                            )
-                        }
-                    }
-                    ElevatedButton(
-                        onClick = { viewModel.changeCategoryExpanded(true) }
-                    ) {
-                        Icon(Icons.Outlined.ExpandMore, "dropdown")
-                        Text(Utility.TRANSACTION_CATEGORIES[uiState.category])
-                    }
-                }
+                )
+
+                /*
+                    TODO:
+                     - Configure the above fields to be appropriately functional
+                     - Add firstCharge & lastCharge fields
+                     - "charge now" button
+                     - show next projected charge in this menu
+                 */
+
+
+//                Column() {
+////                    if (uiState.modTimestamp != LocalDateTime.MIN) {
+////                        Text(
+////                            uiState.modTimestamp.toString() + "\n" + uiState.modTimestamp.toEpochSecond(
+////                                ZoneOffset.UTC)
+////                        )
+////                    }
+//
+//                    // Edit timestamp dialogue opener
+//                    TextButton(
+//                        onClick = {
+////                            viewModel.openTimestampDialogue()
+//                        }
+//                    ) {
+//                        Text(
+//                            text = "Edit time",
+//                            style = MaterialTheme.typography.bodyLarge
+//                        )
+//                        Icon(
+//                            Icons.Outlined.ArrowCircleRight,
+//                            "Edit time button"
+//                        )
+//                    }
+//                }
+
+
+//                Row(
+//                    verticalAlignment = Alignment.CenterVertically
+//                ) {
+//                    Text(
+//                        modifier = Modifier
+//                            .padding(10.dp),
+//                        text = "Category"
+//                    )
+//                    DropdownMenu(
+//                        expanded = uiState.categoryExpanded,
+//                        onDismissRequest = { viewModel.changeCategoryExpanded(false) }
+//                    ) {
+//                        Utility.TransactionCategories.forEachIndexed { index, category ->
+//                            DropdownMenuItem(
+//                                text = { Text(category) },
+//                                onClick = { viewModel.changeCategory(index) }
+//                            )
+//                        }
+//                    }
+//                    ElevatedButton(
+//                        onClick = { viewModel.changeCategoryExpanded(true) }
+//                    ) {
+//                        Icon(Icons.Outlined.ExpandMore, "dropdown")
+//                        Text(Utility.TransactionCategories[uiState.category])
+//                    }
+//                }
                 /*Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -257,18 +290,6 @@ fun TransactionEditScreen(
                         }
                     )
                 }*/
-                // Purchase text input field
-                OutlinedTextField(
-                    modifier = purchaseModifier,
-                    value = uiState.purchaseText,
-                    label = { Text("Purchase") },
-                    placeholder = { Text("Purchase") },
-                    isError = purchaseTouched.value && !uiState.validPurchase,
-                    onValueChange = { viewModel.changePurchaseText(it) },
-                    keyboardOptions = KeyboardOptions(
-                        imeAction = ImeAction.Next,
-                    )
-                )
                 // Amount text input field
                 OutlinedTextField(
                     modifier = amountModifier,
@@ -298,7 +319,7 @@ fun TransactionEditScreen(
                         amountFocus.requestFocus()
                     }
                     else {
-                        viewModel.saveTransaction()
+                        viewModel.saveRecurring()
                         navigateBack()
                     }
                 }
@@ -309,4 +330,21 @@ fun TransactionEditScreen(
             }
         }
     }
+}
+
+@Preview
+@Composable
+fun NewRecurringPreview() {
+    val container = AppDataContainer(
+        LocalContext.current
+    )
+
+    NewRecurring(
+        NewRecurringViewModel(
+            container.recurringRepository,
+            container.dataStore,
+            null
+        ),
+        {}
+    )
 }

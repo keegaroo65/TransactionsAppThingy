@@ -1,5 +1,6 @@
 package com.example.transactions.data
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -26,5 +27,15 @@ data class Recurring (
     val firstCharge: Long,
 
     // The last time it was charged, so the app knows when to make the next charge
-    val lastCharge: Long
+    val lastCharge: Long,
+
+    @ColumnInfo(defaultValue = "0")
+    val nextCharge: Long
+
+    /*
+        TODO:
+         - potential new type: occurs same calendar day every period of X months instead of days
+         - preconfigured transaction categories for recurring transactions (default "recurring")
+     */
+
 )

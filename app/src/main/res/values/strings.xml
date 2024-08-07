@@ -1,12 +1,13 @@
 <resources>
     <string name="app_name">Transactions</string>
 
-    <string name="homeRoute">home</string>
-    <string name="historyRoute">history</string>
-    <string name="settingsRoute">settings</string>
-
-
     <string name="homeTitle">Home</string>
     <string name="historyTitle">History</string>
+    <string name="recurringTitle">Recurring</string>
     <string name="settingsTitle">Settings</string>
+
+    <string name="homeRoute">home</string>
+    <string name="historyRoute">history</string>
+    <string name="recurringRoute">recurring</string>
+    <string name="settingsRoute">settings</string>
 </resources>

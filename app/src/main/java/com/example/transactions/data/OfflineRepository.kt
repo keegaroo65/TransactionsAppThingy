@@ -14,8 +14,18 @@ class OfflineHistoryRepository(private val historyDao: HistoryDao) : HistoryRepo
     override suspend fun deleteTransaction(transaction: Transaction) = historyDao.delete(transaction)
 
     override suspend fun deleteTransactions(transactions: List<Transaction>) = historyDao.delete(transactions)
+
+    override suspend fun deleteAllTransactions() = historyDao.deleteAllTransactions()
 }
 
 class OfflineRecurringRepository(private val recurringDao: RecurringDao) : RecurringRepository {
+    override fun getAllRecurringsStream(): Flow<List<Recurring>> = recurringDao.getAllRecurrings()
 
+    override fun getAllRecurringsSync(): List<Recurring> = recurringDao.getAllRecurringsSync()
+
+    override suspend fun getRecurring(id: Int): Recurring = recurringDao.getRecurring(id)
+
+    override suspend fun insertRecurring(recurring: Recurring) = recurringDao.insert(recurring)
+
+    override suspend fun updateRecurring(recurring: Recurring) = recurringDao.update(recurring)
 }

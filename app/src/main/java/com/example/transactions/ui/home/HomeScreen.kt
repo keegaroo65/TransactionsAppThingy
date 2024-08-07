@@ -31,6 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.transactions.Utility
+import com.example.transactions.workers.SubscriptionsViewModel
 import kotlinx.coroutines.launch
 
 private const val TAG = "HomeScreen"
@@ -38,6 +39,7 @@ private const val TAG = "HomeScreen"
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel,
+    subscriptionsViewModel: SubscriptionsViewModel,
     newTransaction: () -> Unit
 ) {
     val balance by viewModel.balance.collectAsState()//WithLifecycle()
@@ -125,6 +127,21 @@ fun HomeScreen(
             ) {
                 Icon(Icons.Outlined.Paid, "")
             }
+        }
+        ExtendedFloatingActionButton(
+            onClick = {
+                Log.d(TAG, "workManagerTest started ${Utility.time()}")
+                subscriptionsViewModel.test()
+            }
+        ) {
+            Icon(
+                Icons.Outlined.AddCircle, ""
+            )
+            Text(
+                modifier = Modifier
+                    .padding(10.dp),
+                text = "Test Work Task"
+            )
         }
     }
 }

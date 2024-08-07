@@ -51,6 +51,7 @@ import androidx.navigation.NavBackStackEntry
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.example.transactions.Utility.Companion.LoadingPopup
 import com.example.transactions.Utility.Companion.LoadingPopupCard
 import com.example.transactions.data.AppDataContainer
 import com.example.transactions.data.HistoryRepository
@@ -64,10 +65,16 @@ import com.example.transactions.ui.home.HomeScreen
 import com.example.transactions.ui.home.HomeViewModel
 import com.example.transactions.ui.navigation.AppBottomNavigation
 import com.example.transactions.ui.navigation.NavItem
+import com.example.transactions.ui.newRecurring.NewRecurring
+import com.example.transactions.ui.newRecurring.NewRecurringViewModel
 import com.example.transactions.ui.newTransaction.NewTransaction
 import com.example.transactions.ui.newTransaction.NewTransactionViewModel
-import com.example.transactions.ui.settings.Settings
+import com.example.transactions.ui.recurring.RecurringDetail
+import com.example.transactions.ui.recurring.RecurringScreen
+import com.example.transactions.ui.recurring.RecurringViewModel
+import com.example.transactions.ui.settings.SettingsScreen
 import com.example.transactions.ui.theme.TransactionsTheme
+import com.example.transactions.workers.SubscriptionsViewModel
 import kotlinx.coroutines.launch
 
 private val TAG = "MainActivity"
@@ -86,14 +93,20 @@ class MainActivity : ComponentActivity() {
             TransactionsTheme {
                 MainContainer(
                     mainViewModel,
-                    HistoryViewModel(
-                        container.historyRepository
-                    ),
                     HomeViewModel(
                         container.dataStore
                     ),
+                    HistoryViewModel(
+                        container.historyRepository
+                    ),
+                    RecurringViewModel(
+                        container.recurringRepository
+                    ),
                     container.historyRepository,
-                    container.recurringRepository
+                    container.recurringRepository,
+                    SubscriptionsViewModel(
+                        application
+                    )
                 )
             }
         }
@@ -104,19 +117,24 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainContainer(
     mainViewModel: MainViewModel,
-    historyViewModel: HistoryViewModel,
     homeViewModel: HomeViewModel,
+    historyViewModel: HistoryViewModel,
+    recurringViewModel: RecurringViewModel,
     historyRepository: HistoryRepository,
-    recurringRepository: RecurringRepository
+    recurringRepository: RecurringRepository,
+    subscriptionsViewModel: SubscriptionsViewModel
 ) {
     val uiState = mainViewModel.uiState.collectAsState().value
 
     val navController = rememberNavController()
 
+    // TODO move string resources
     val NAV_HOME = stringResource(NavItem.Home.navRoute)
     val NAV_HISTORY = stringResource(NavItem.History.navRoute)
+    val NAV_RECURRING = stringResource(NavItem.Recurring.navRoute)
     val NAV_SETTINGS = stringResource(NavItem.Settings.navRoute)
     val NAV_NEW_TRANSACTION = "newTransaction"
+    val NAV_NEW_RECURRING = "newRecurring"
 
     val coroutineScope = rememberCoroutineScope()
 
@@ -226,7 +244,8 @@ fun MainContainer(
             ) {
                 mainViewModel.clearEditTransaction()
                 HomeScreen(
-                    homeViewModel
+                    homeViewModel,
+                    subscriptionsViewModel
                 ) {
                     navController.navigate("$NAV_HOME/$NAV_NEW_TRANSACTION")
                 }
@@ -261,12 +280,30 @@ fun MainContainer(
                     }
                 )
             }
+            // Recurring page
+            composable(
+                route = NAV_RECURRING
+            ) {
+                mainViewModel.clearEditTransaction()
+                RecurringScreen(
+                    recurringViewModel,
+                    {
+                        navController.navigate(NAV_NEW_RECURRING)
+                    },
+                    {
+                        navController.navigate("recurring/${it.id}")
+                    },
+                    {
+                        mainViewModel.deleteAllTransactions()
+                    }
+                )
+            }
             // Settings page
             composable(
                 route = NAV_SETTINGS
             ) {
                 mainViewModel.clearEditTransaction()
-                Settings()
+                SettingsScreen()
             }
 
 
@@ -331,6 +368,38 @@ fun MainContainer(
                         viewModel(factory = NewTransactionViewModel.Companion.NewTransactionViewModelFactory(transaction))
                     ) {
                         navController.navigate(NAV_HISTORY)
+                    }
+                }
+            }
+
+            // New Recurring from Recurring page
+            composable(
+                route = NAV_NEW_RECURRING
+            ) {
+                NewRecurring(
+                    viewModel(factory = NewRecurringViewModel.Companion.NewRecurringViewModelFactory(null))
+                ) {
+                    navController.navigate(NAV_RECURRING)
+                }
+            }
+            // View Recurring from Recurring page
+            composable(
+                route = "recurring/{recurringId}"
+            ) {
+                val recurringId = it.arguments?.getString("recurringId")?.toInt() ?: -1
+
+                mainViewModel.getRecurringAsync(recurringId)
+
+                val recurring = uiState.viewRecurring
+                if (recurring == null) {
+                    LoadingPopup()
+                }
+                else {
+                    RecurringDetail(
+                        recurring,
+//                        viewModel(factory = NewTransactionViewModel.Companion.NewTransactionViewModelFactory(transaction))
+                    ) {
+                        subscriptionsViewModel.test(recurring)
                     }
                 }
             }

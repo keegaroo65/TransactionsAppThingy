@@ -27,9 +27,25 @@ interface HistoryDao {
 
     @Delete
     suspend fun delete(transactions: List<Transaction>)
+
+    @Query("DELETE FROM transactions")
+    suspend fun deleteAllTransactions()
 }
 
 @Dao
 interface RecurringDao {
+    @Query("SELECT * from recurrings ORDER BY nextCharge DESC")
+    fun getAllRecurrings(): Flow<List<Recurring>>
 
+    @Query("SELECT * from recurrings ORDER BY nextCharge DESC")
+    fun getAllRecurringsSync(): List<Recurring>
+
+    @Query("SELECT * from recurrings WHERE id = :id")
+    suspend fun getRecurring(id: Int): Recurring
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insert(recurring: Recurring)
+
+    @Update
+    suspend fun update(recurring: Recurring)
 }

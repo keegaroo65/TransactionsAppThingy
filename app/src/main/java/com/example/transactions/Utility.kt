@@ -1,6 +1,7 @@
 package com.example.transactions
 
 import android.util.Log
+import androidx.annotation.FloatRange
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -10,17 +11,27 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.colorspace.ColorSpaces
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TransformedText
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
+import com.example.transactions.data.Recurring
 import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
 import kotlin.math.abs
+
+private val TAG = "Utility"
 
 class Utility {
     companion object {
-        val TransactionCategories = arrayOf(
+        //// Constants
+
+        val TRANSACTION_CATEGORIES = arrayOf(
             "Emergency",
             "Games/Toys",
             "Giving",
@@ -34,10 +45,13 @@ class Utility {
             "Phone & WiFi",
             "Quick Food",
             "Recreation",
+            "Recurring",
             "Saving",
             "Snacks",
             "Transportation"
         )
+
+        //// Various utility functions
 
         fun time(): Long {
             return System.currentTimeMillis()
@@ -57,30 +71,32 @@ class Utility {
             return text
         }
 
-        fun readableDate(
-            then: Long
-        ): String {
-            val now = time()
+        fun lerp(start: Color, stop: Color, @FloatRange(from = 0.0, to = 1.0) fraction: Float): Color {
+            val colorSpace = ColorSpaces.Oklab
+            val startColor = start.convert(colorSpace)
+            val endColor = stop.convert(colorSpace)
 
-            // Time from then until now converted to seconds (from milliseconds)
-            val delta = ((now - then) / 1000).toDouble()
+            val startAlpha = startColor.alpha
+            val startL = startColor.red
+            val startA = startColor.green
+            val startB = startColor.blue
 
-            //Log.i("hi","delta $delta")
+            val endAlpha = endColor.alpha
+            val endL = endColor.red
+            val endA = endColor.green
+            val endB = endColor.blue
 
-            val text: String = if (delta < 10) {
-                "now"
-            } else if (delta < 60*60) {
-                SimpleDateFormat("h:mm a").format(then)
-            } else if (delta < 60*60*24) {
-                SimpleDateFormat("EEEE 'at' h:mm a").format(then)
-            } else if (delta < 60*60*24*7) {
-                SimpleDateFormat("EEEE d 'at' h:mm a").format(then)
-            } else {
-                SimpleDateFormat("yyyy EEEE MMM d 'at' h:mm a").format(then)
-            }
-
-            return text
+            val interpolated = Color(
+                alpha = androidx.compose.ui.util.lerp(startAlpha, endAlpha, fraction),
+                red = androidx.compose.ui.util.lerp(startL, endL, fraction),
+                green = androidx.compose.ui.util.lerp(startA, endA, fraction),
+                blue = androidx.compose.ui.util.lerp(startB, endB, fraction),
+                colorSpace = colorSpace
+            )
+            return interpolated.convert(stop.colorSpace)
         }
+
+        //// @Composable utility functions
 
         @Composable
         fun LoadingPopup() {
@@ -105,6 +121,126 @@ class Utility {
             ) {
                 LoadingPopup()
             }
+        }
+
+        //// Date/time utility functions
+
+        fun readablePastDate(
+            then: Long
+        ): String {
+            val now = time()
+
+            // Time from then until now converted to seconds (from milliseconds)
+            val delta = ((now - then) / 1000).toDouble()
+
+            //Log.i("hi","delta $delta")
+
+            val text: String = if (delta < 10) {
+                "now"
+            } else if (delta < 60*60) {
+                SimpleDateFormat("h:mm a").format(then)
+            } else if (delta < 60*60*24) {
+                SimpleDateFormat("EEEE 'at' h:mm a").format(then)
+            } else if (delta < 60*60*24*7) {
+                SimpleDateFormat("EEEE d 'at' h:mm a").format(then)
+            } else {
+                SimpleDateFormat("yyyy EEEE MMM d 'at' h:mm a").format(then)
+            }
+
+            return text
+        }
+
+        fun readableDate(
+            then: Long
+        ): String {
+            return SimpleDateFormat("yyyy EEEE MMM d 'at' h:mm a").format(then)
+        }
+
+        fun isLeapYear(year: Int): Boolean {
+            return ((year % 4) == 0 && (year % 100) != 0) || (year % 400) == 0
+        }
+
+        // Will always occur at 5am on the set day
+        fun nextCharge(recurring: Recurring, _lastCharge: Long? = null): Long {
+            Log.d(TAG, "trying recurring date ${recurring.id}")
+            val type = recurring.type
+            val period = recurring.period
+            val lastCharge = _lastCharge ?: recurring.lastCharge // optional parameter to override the current lastCharge field, eg. when in the charging process
+
+            val timezone = ZoneId.systemDefault().rules.getOffset(Instant.now())
+
+//            val now = LocalDateTime.now()
+            val last = LocalDateTime.ofEpochSecond(
+                lastCharge / 1000L,
+                0,
+                timezone
+            )
+
+//            val nowMonth = now.monthValue
+//            val nowMonthDay = now.dayOfMonth
+
+            val lastMonth = last.monthValue
+            val lastMonthT = last.month
+            val lastMonthDay = last.dayOfMonth
+            val lastYearDay = last.dayOfYear
+            val lastYear = last.year
+
+            var nextChargeDate = LocalDateTime.ofEpochSecond(
+                0L,
+                0,
+                timezone
+            )
+
+            // Type 0: Same day every month (eg. June `period`th then July `period`th then August `period`th
+            if (type == 0) {
+                val nextMonth = (lastMonth % 12) + 1
+
+                nextChargeDate = LocalDateTime.of(
+                    if (nextMonth == 1) lastYear + 1 else lastYear,
+                    nextMonth,
+                    period,
+                    3,
+                    0
+                )
+            }
+
+            // Type 1: Every `period` days (eg. `period` = 9 so April 3rd then April 12th then April 21st
+            else if (type == 1) {
+                val leapYear = isLeapYear(lastYear)
+                val newDay = lastYearDay + period
+                val daysInYear = if (leapYear) 366 else 365
+
+                nextChargeDate = LocalDateTime.of(
+                    if (newDay > daysInYear)
+                        lastYear + 1
+                    else
+                        lastYear,
+                    1,
+                    1,
+                    3,
+                    0
+                ).withDayOfYear(
+                    if (newDay > daysInYear)
+                        newDay - daysInYear // year changed, subtract the # of days in the last year
+                    else
+                        newDay // year did not changed so continue normally
+                )
+            }
+
+            // Error case
+            else {
+                Log.e(TAG, "Invalid 'type' for recurring id ${recurring.id} of ${recurring.type}")
+            }
+
+            // INCREDIBLY USEFUL DEBUG FOR THIS FUNCTION
+            Log.d(TAG,"""
+                Calculating next charge date:
+                $lastYear $lastMonthT ($lastMonth) $lastMonthDay
+                to (type $type; wanting day(s) $period)
+                ${nextChargeDate.year} ${nextChargeDate.month} (${nextChargeDate.monthValue}) ${nextChargeDate.dayOfMonth}
+            """.trimIndent())
+
+            return nextChargeDate.atZone(timezone).toInstant().toEpochMilli()
         }
     }
 }

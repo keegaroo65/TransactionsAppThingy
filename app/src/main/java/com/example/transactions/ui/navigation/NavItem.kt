@@ -3,9 +3,11 @@ package com.example.transactions.ui.navigation
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Analytics
+import androidx.compose.material.icons.filled.EventRepeat
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.Analytics
+import androidx.compose.material.icons.outlined.EventRepeat
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -29,6 +31,13 @@ sealed class NavItem(
         R.string.historyRoute,
         Icons.Outlined.Analytics,
         Icons.Filled.Analytics
+    )
+
+    data object Recurring: NavItem(
+        R.string.recurringTitle,
+        R.string.recurringRoute,
+        Icons.Outlined.EventRepeat,
+        Icons.Filled.EventRepeat
     )
 
     data object Settings: NavItem(

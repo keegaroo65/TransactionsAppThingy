@@ -34,7 +34,7 @@ class HistoryViewModel (
             viewModelScope.launch {
                 stateFlow.collect { transactionList ->
                     _uiState.update { currentState ->
-                        Log.d(TAG, "stupidness !!!!!! ${currentState.transactionList.count()} -> ${transactionList.count()}")
+//                        Log.d(TAG, "stupidness !!!!!! ${currentState.transactionList.count()} -> ${transactionList.count()}")
                         currentState.copy(
                             transactionList = transactionList,
                             selectedTransactions = List(transactionList.count()) { false },

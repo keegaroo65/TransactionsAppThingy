@@ -10,6 +10,7 @@ import androidx.lifecycle.viewmodel.CreationExtras
 import com.example.transactions.data.AppContainer
 import com.example.transactions.data.DataStoreManager
 import com.example.transactions.data.HistoryRepository
+import com.example.transactions.data.Recurring
 import com.example.transactions.data.RecurringRepository
 import com.example.transactions.data.Transaction
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -58,13 +59,32 @@ class MainViewModel(
         }
     }
 
+    fun getRecurringAsync(recurringId: Int) {
+        viewModelScope.launch {
+            val recurring = recurringRepository.getRecurring(recurringId)
+
+            _uiState.update { currentState ->
+                currentState.copy(
+                    viewRecurring = recurring
+                )
+            }
+        }
+    }
+
     // TODO: make all calls to this function instead of independent on new nav composable,
     //  connected to the edit transaction page being left somehow?
     fun clearEditTransaction() {
         _uiState.update {
             it.copy(
-                editTransaction = null
+                editTransaction = null,
+                viewRecurring = null
             )
+        }
+    }
+
+    fun deleteAllTransactions() {
+        viewModelScope.launch {
+            historyRepository.deleteAllTransactions()
         }
     }
 
@@ -97,5 +117,6 @@ class MainViewModel(
 
 data class MainUiState(
     val deleteButtonShown: Boolean = false,
-    val editTransaction: Transaction? = null
+    val editTransaction: Transaction? = null,
+    val viewRecurring: Recurring? = null
 )

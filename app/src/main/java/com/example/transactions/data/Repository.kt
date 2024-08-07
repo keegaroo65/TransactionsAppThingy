@@ -14,8 +14,18 @@ interface HistoryRepository {
     suspend fun deleteTransaction(transaction: Transaction)
 
     suspend fun deleteTransactions(transactions: List<Transaction>)
+
+    suspend fun deleteAllTransactions()
 }
 
 interface RecurringRepository {
+    fun getAllRecurringsStream(): Flow<List<Recurring>>
 
+    fun getAllRecurringsSync(): List<Recurring>
+
+    suspend fun getRecurring(id: Int): Recurring
+
+    suspend fun insertRecurring(recurring: Recurring)
+
+    suspend fun updateRecurring(recurring: Recurring)
 }
