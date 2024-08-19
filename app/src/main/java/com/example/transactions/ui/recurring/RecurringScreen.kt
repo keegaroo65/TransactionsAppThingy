@@ -7,18 +7,12 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
-import androidx.compose.material.icons.outlined.CalendarMonth
-import androidx.compose.material.icons.outlined.DeleteSweep
-import androidx.compose.material.icons.outlined.EventRepeat
-import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.MaterialTheme
@@ -44,58 +38,58 @@ fun RecurringScreen(
 ) {
     val uiState = viewModel.uiState.collectAsState().value
     Column {
-        Row (
-            modifier = Modifier
-                .fillMaxWidth()
-        ) {
-            FloatingActionButton(
-                modifier = Modifier
-                    .padding(25.dp),
-                onClick = {
-                    viewModel.resetTimestamps()
-                }
-            ) {
-                Icon(
-                    Icons.Outlined.Refresh, ""
-                )
-            }
-            FloatingActionButton(
-                modifier = Modifier
-                    .padding(25.dp),
-                onClick = {
-                    viewModel.resetTimestamps()
-                    viewModel.updateAllNextCharges()
-                }
-            ) {
-                Icon(
-                    Icons.Outlined.EventRepeat, ""
-                )
-            }
-            FloatingActionButton(
-                modifier = Modifier
-                    .padding(25.dp),
-                onClick = {
-                    viewModel.updateAllNextCharges()
-                }
-            ) {
-                Icon(
-                    Icons.Outlined.CalendarMonth, ""
-                )
-            }
-            FloatingActionButton(
-                modifier = Modifier
-                    .padding(25.dp),
-                onClick = {
-                    deleteAllTransactions()
-                }
-            ) {
-                Icon(
-                    Icons.Outlined.DeleteSweep, ""
-                )
-            }
-        }
-
-        HorizontalDivider()
+//        Row (
+//            modifier = Modifier
+//                .fillMaxWidth()
+//        ) {
+//            FloatingActionButton(
+//                modifier = Modifier
+//                    .padding(25.dp),
+//                onClick = {
+//                    viewModel.resetTimestamps()
+//                }
+//            ) {
+//                Icon(
+//                    Icons.Outlined.Refresh, ""
+//                )
+//            }
+//            FloatingActionButton(
+//                modifier = Modifier
+//                    .padding(25.dp),
+//                onClick = {
+//                    viewModel.resetTimestamps()
+//                    viewModel.updateAllNextCharges()
+//                }
+//            ) {
+//                Icon(
+//                    Icons.Outlined.EventRepeat, ""
+//                )
+//            }
+//            FloatingActionButton(
+//                modifier = Modifier
+//                    .padding(25.dp),
+//                onClick = {
+//                    viewModel.updateAllNextCharges()
+//                }
+//            ) {
+//                Icon(
+//                    Icons.Outlined.CalendarMonth, ""
+//                )
+//            }
+//            FloatingActionButton(
+//                modifier = Modifier
+//                    .padding(25.dp),
+//                onClick = {
+//                    deleteAllTransactions()
+//                }
+//            ) {
+//                Icon(
+//                    Icons.Outlined.DeleteSweep, ""
+//                )
+//            }
+//        }
+//
+//        HorizontalDivider()
 
         Box(
             modifier = Modifier
@@ -110,7 +104,8 @@ fun RecurringScreen(
 
                     RecurringCard(
                         recurring,
-                        i
+                        i,
+                        Utility.daysUntil(recurring.nextCharge)
                     ) {
                         viewModel.updateNextCharge(recurring)
 
@@ -140,6 +135,7 @@ fun RecurringScreen(
 fun RecurringCard(
     recurring: Recurring,
     recurringId: Int,
+    daysUntil: Int,
     onClick: () -> Unit
 ) {
     val title = recurring.title
@@ -147,7 +143,7 @@ fun RecurringCard(
     val details = recurring.details
 
     // TODO: add "next charge" field to schema to make my life infinitely easier, remember MIGRATION
-    val pretendDays = (recurringId) / 4f * 14
+//    val pretendDays = (recurringId) / 4f * 14
 //    val type = transaction.type
 //    val amount = transaction.amount
 //    val reason = transaction.reason
@@ -210,18 +206,18 @@ fun RecurringCard(
 //                    )
 //                }
                 Text(
-                    text = pretendDays.toInt().toString(),
+                    text = daysUntil.toString(),
                     modifier = Modifier
                         .drawBehind {
                             drawCircle(
-                                if (pretendDays > 7) {
+                                if (daysUntil > 7 || daysUntil < 0) {
                                     circleColor
                                 }
                                 else {
                                      Utility.lerp(
                                          Color(245, 239, 66),
                                          Color(245, 66, 66),
-                                         1 - (pretendDays / 7f)
+                                         1 - (daysUntil / 7f),
                                      )
                                 },
                                 radius = size.height * 0.6f,

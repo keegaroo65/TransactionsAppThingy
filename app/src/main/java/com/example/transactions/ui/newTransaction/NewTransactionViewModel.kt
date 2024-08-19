@@ -66,34 +66,34 @@ class NewTransactionViewModel(
         }
     }
 
-    fun changeTranType(_tranType: Int) {
+    fun changeTranType(tranType: Int) {
         _uiState.update { currentState ->
             currentState.copy(
-                tranType = _tranType
+                tranType = tranType
             )
         }
     }
 
-    fun changeCategory(_category: Int) {
+    fun changeCategory(category: Int) {
         _uiState.update { currentState ->
             currentState.copy(
-                category = _category,
+                category = category,
                 categoryExpanded = false
             )
         }
     }
 
-    fun changePurchaseText(_purchaseText: String) {
+    fun changePurchaseText(purchaseText: String) {
         _uiState.update { currentState ->
             currentState.copy( // TODO: remove start + end whitespace, possibly double spaces
-                purchaseText = _purchaseText.replace(";", ""),
-                validPurchase = _purchaseText.isNotEmpty()
+                purchaseText = purchaseText,
+                validPurchase = purchaseText.isNotEmpty()
             )
         }
-    } //
+    }
 
-    fun changeAmountText(_amountText: String) {
-        val newAmountText = _amountText.filter { it.isDigit() }//|| it.equals('.') }
+    fun changeAmountText(amountText: String) {
+        val newAmountText = amountText.filter { it.isDigit() }//|| it.equals('.') }
 
         if (newAmountText.isNotEmpty()) {
             val num = newAmountText.toDouble()
@@ -125,10 +125,10 @@ class NewTransactionViewModel(
         }
     }
 
-    fun changeCategoryExpanded(_categoryExpanded: Boolean) {
+    fun changeCategoryExpanded(categoryExpanded: Boolean) {
         _uiState.update { currentState ->
             currentState.copy(
-                categoryExpanded = _categoryExpanded
+                categoryExpanded = categoryExpanded
             )
         }
     }

@@ -1,11 +1,17 @@
 package com.example.transactions.ui.recurring
 
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.transactions.Utility
@@ -15,11 +21,16 @@ import kotlinx.coroutines.launch
 @Composable
 fun RecurringDetail(
     recurring: Recurring,
-    testRunSubscription: () -> Unit
+    deleteRecurring: () -> Unit,
+    editRecurring: () -> Unit
 ) {
     val coroutineScope = rememberCoroutineScope()
 
-    Column {
+    Box(
+        modifier = Modifier
+            .padding(15.dp)
+            .fillMaxSize()
+    ) {
         Text("""
             id: ${recurring.id}
             amount: ${recurring.amount}
@@ -31,20 +42,36 @@ fun RecurringDetail(
             first: ${Utility.readableDate(recurring.firstCharge)}
             lastCharge: ${Utility.readableDate(recurring.lastCharge)}
             nextCharge: ${Utility.readableDate(recurring.nextCharge)}
-        """.trimIndent()
+        """.trimIndent(),
+            modifier = Modifier
+                .align(Alignment.Center)
         )
 
-        ExtendedFloatingActionButton(
+        FloatingActionButton(
             onClick = {
                 coroutineScope.launch {
-                    testRunSubscription()
+                    editRecurring()
                 }
-            }
+            },
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
         ) {
-            Text(
-                modifier = Modifier
-                    .padding(10.dp),
-                text = "Test run since Jan 1st 2024"
+            Icon(
+                Icons.Filled.Edit, "edit"
+            )
+        }
+
+        FloatingActionButton(
+            onClick = {
+                coroutineScope.launch {
+                    deleteRecurring()
+                }
+            },
+            modifier = Modifier
+                .align(Alignment.BottomStart)
+        ) {
+            Icon(
+                Icons.Filled.Delete, "delete"
             )
         }
     }

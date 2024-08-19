@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.outlined.AttachMoney
 import androidx.compose.material.icons.outlined.DateRange
 import androidx.compose.material.icons.outlined.Event
 import androidx.compose.material3.Card
@@ -34,7 +35,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
@@ -42,6 +45,7 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.transactions.MoneyTransformation
+import com.example.transactions.R
 import com.example.transactions.data.AppDataContainer
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -57,24 +61,58 @@ fun NewRecurring(
         Icons.Outlined.DateRange
     )
 
-    // These 4 are for turning the text fields red if opened then closed without inputting valid value
-    val purchaseOpened = rememberSaveable { mutableStateOf(false) }
-    val purchaseTouched = rememberSaveable { mutableStateOf(false) }
+    val startTypeOptions = listOf(
+        Icons.Outlined.AttachMoney,
+        ImageVector.vectorResource(R.drawable.event_upcoming)
+    )
+
+    // TODO: array for these saveables?
+
+    // These 6 are for turning the text fields red if opened then closed without inputting valid value
+    val titleOpened = rememberSaveable { mutableStateOf(false) }
+    val titleTouched = rememberSaveable { mutableStateOf(false) }
+
+    val detailsOpened = rememberSaveable { mutableStateOf(false) }
+    val detailsTouched = rememberSaveable { mutableStateOf(false) }
+
+//    val periodOpened = rememberSaveable { mutableStateOf(false) }
+//    val periodTouched = rememberSaveable { mutableStateOf(false) }
+
     val amountOpened = rememberSaveable { mutableStateOf(false) }
     val amountTouched = rememberSaveable { mutableStateOf(false) }
 
-    // These 2 are for forcing capture on invalid TextFields
-    val purchaseFocus = remember { FocusRequester() }
+    // These 3 are for forcing capture on invalid TextFields
+    val titleFocus = remember { FocusRequester() }
+    val detailsFocus = remember { FocusRequester() }
+    val periodFocus = remember { FocusRequester() }
     val amountFocus = remember { FocusRequester() }
 
-    val purchaseModifier = Modifier
+    val titleModifier = Modifier
         .onFocusChanged {
             if (it.isFocused)
-                purchaseOpened.value = true
-            else if (purchaseOpened.value)
-                purchaseTouched.value = true
+                titleOpened.value = true
+            else if (titleOpened.value)
+                titleTouched.value = true
         }
-        .focusRequester(purchaseFocus)
+        .focusRequester(titleFocus)
+
+    val detailsModifier = Modifier
+        .onFocusChanged {
+            if (it.isFocused)
+                detailsOpened.value = true
+            else if (detailsOpened.value)
+                detailsTouched.value = true
+        }
+        .focusRequester(detailsFocus)
+
+    val periodModifier = Modifier
+//        .onFocusChanged {
+//            if (it.isFocused)
+//                periodOpened.value = true
+//            else if (periodOpened.value)
+//                periodTouched.value = true
+//        }
+        .focusRequester(periodFocus)
 
     val amountModifier = Modifier
         .onFocusChanged {
@@ -110,25 +148,24 @@ fun NewRecurring(
 
                 // Title text input field
                 OutlinedTextField(
-                    modifier = purchaseModifier,
+                    modifier = titleModifier,
                     value = uiState.titleText,
                     label = { Text("Title") },
                     placeholder = { Text("Title") },
-                    isError = purchaseTouched.value && !uiState.validPurchase,
+                    isError = titleTouched.value && !uiState.validTitle,
                     onValueChange = { viewModel.changeTitleText(it) },
                     keyboardOptions = KeyboardOptions(
                         imeAction = ImeAction.Next,
                     )
                 )
 
-                // Purchase text input field
+                // Details text input field
                 OutlinedTextField(
-                    modifier = purchaseModifier,
-                    value = uiState.titleText,
+                    modifier = detailsModifier,
+                    value = uiState.detailsText ?: "",
                     label = { Text("Details") },
                     placeholder = { Text("Details (optional)") },
-                    isError = purchaseTouched.value && !uiState.validPurchase,
-                    onValueChange = { viewModel.changeTitleText(it) },
+                    onValueChange = { viewModel.changeDetailsText(it) },
                     keyboardOptions = KeyboardOptions(
                         imeAction = ImeAction.Next,
                     )
@@ -143,9 +180,9 @@ fun NewRecurring(
                         style = MaterialTheme.typography.bodyLarge
                     )
                     Switch(
-                        checked = true,
-                        onCheckedChange = null,
-                        thumbContent = if (true) {
+                        checked = uiState.active,
+                        onCheckedChange = { viewModel.changeActive(!uiState.active) },
+                        thumbContent = if (uiState.active) {
                             {
                                 Icon(
                                     imageVector = Icons.Filled.Check,
@@ -184,24 +221,70 @@ fun NewRecurring(
                             .padding(5.dp),
                         textAlign = TextAlign.Center,
                         text = when (uiState.type) {
-                            0 -> "Calendar day each month:"
-                            else -> "Period of days:"
+                            0 -> "(max of 28) Calendar day each month:"
+                            else -> "(max of 365) Period of days:"
                         }
                     )
                 }
 
-                // Purchase text input field
+                // Period text input field
                 OutlinedTextField(
-                    modifier = purchaseModifier,
-                    value = uiState.titleText,
+//                    modifier = periodModifier,
+                    value = uiState.periodText,
                     label = { Text("Period") },
                     placeholder = { Text("Period") },
-                    isError = purchaseTouched.value && !uiState.validPurchase,
-                    onValueChange = { viewModel.changeTitleText(it) },
+                    isError = !uiState.validPeriod,
+                    onValueChange = { viewModel.changePeriodText(it) },
                     keyboardOptions = KeyboardOptions(
                         imeAction = ImeAction.Next,
                     )
                 )
+
+                // Amount text input field
+                OutlinedTextField(
+                    modifier = amountModifier,
+                    value = uiState.amountText,
+                    label = { Text("Amount") },
+                    placeholder = { Text("Amount") },
+                    isError = amountTouched.value && !uiState.validAmount,
+                    onValueChange = { viewModel.changeAmountText(it) },
+                    visualTransformation = MoneyTransformation(),
+                    keyboardOptions = KeyboardOptions(
+                        imeAction = ImeAction.Done,
+                        keyboardType = KeyboardType.Number
+                    ),
+                )
+
+                // Segmented button to pick between 2 recurring types
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    SingleChoiceSegmentedButtonRow {
+                        startTypeOptions.forEachIndexed { index, icon ->
+                            SegmentedButton(
+                                shape = SegmentedButtonDefaults.itemShape(index = index, count = typeOptions.size),
+                                onClick = { viewModel.changeChargeType(index) },
+                                selected = index == uiState.chargeType
+                            ) {
+                                Icon(
+                                    imageVector = icon,
+                                    contentDescription = "",
+                                    //tint = Color.Cyan,
+                                    modifier = Modifier.size(SegmentedButtonDefaults.IconSize)
+                                )
+                            }
+                        }
+                    }
+                    Text(
+                        modifier = Modifier
+                            .padding(5.dp),
+                        textAlign = TextAlign.Center,
+                        text = when (uiState.chargeType) {
+                            0 -> "make first charge now"
+                            else -> "wait until next charge"
+                        }
+                    )
+                }
 
                 /*
                     TODO:
@@ -290,29 +373,18 @@ fun NewRecurring(
                         }
                     )
                 }*/
-                // Amount text input field
-                OutlinedTextField(
-                    modifier = amountModifier,
-                    value = uiState.amountText,
-                    label = { Text("Amount") },
-                    placeholder = { Text("Amount") },
-                    isError = amountTouched.value && !uiState.validAmount,
-                    onValueChange = { viewModel.changeAmountText(it) },
-                    visualTransformation = MoneyTransformation(),
-                    keyboardOptions = KeyboardOptions(
-                        imeAction = ImeAction.Done,
-                        keyboardType = KeyboardType.Number
-                    ),
-                )
             }
             FloatingActionButton(
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
                     .padding(25.dp),
                 onClick = {
-                    if (!uiState.validPurchase) {
-                        purchaseTouched.value = true
-                        purchaseFocus.requestFocus()
+                    if (!uiState.validTitle) {
+                        titleTouched.value = true
+                        titleFocus.requestFocus()
+                    }
+                    else if (!uiState.validPeriod) {
+                        periodFocus.requestFocus()
                     }
                     else if (!uiState.validAmount) {
                         amountTouched.value = true
@@ -339,12 +411,14 @@ fun NewRecurringPreview() {
         LocalContext.current
     )
 
-    NewRecurring(
-        NewRecurringViewModel(
-            container.recurringRepository,
-            container.dataStore,
-            null
-        ),
-        {}
+    val viewModel = NewRecurringViewModel(
+        container.recurringRepository,
+        container.historyRepository,
+        container.dataStore,
+        null
     )
+
+    NewRecurring(
+        viewModel
+    ) {}
 }

@@ -28,4 +28,6 @@ class OfflineRecurringRepository(private val recurringDao: RecurringDao) : Recur
     override suspend fun insertRecurring(recurring: Recurring) = recurringDao.insert(recurring)
 
     override suspend fun updateRecurring(recurring: Recurring) = recurringDao.update(recurring)
+
+    override suspend fun deleteRecurring(recurring: Recurring) = recurringDao.delete(recurring)
 }

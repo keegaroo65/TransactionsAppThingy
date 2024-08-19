@@ -23,6 +23,7 @@ import java.text.SimpleDateFormat
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
+import java.time.temporal.ChronoUnit
 import kotlin.math.abs
 
 private val TAG = "Utility"
@@ -160,6 +161,55 @@ class Utility {
             return ((year % 4) == 0 && (year % 100) != 0) || (year % 400) == 0
         }
 
+        fun currentDayOfMonth(): Int {
+            val now = time()
+            val timezone = ZoneId.systemDefault().rules.getOffset(Instant.now())
+            val date = LocalDateTime.ofEpochSecond(
+                now / 1000L,
+                0,
+                timezone
+            )
+            return date.dayOfMonth
+        }
+
+        fun daysUntil(timestamp: Long): Int {
+            val now = time()
+            val timezone = ZoneId.systemDefault().rules.getOffset(Instant.now())
+            val nowDate = LocalDateTime.ofEpochSecond(
+                now / 1000L,
+                0,
+                timezone
+            ).toLocalDate()
+            val thenDate = LocalDateTime.ofEpochSecond(
+                timestamp / 1000L,
+                0,
+                timezone
+            ).toLocalDate()
+
+            return ChronoUnit.DAYS.between(nowDate,thenDate).toInt()
+        }
+
+//        fun currentDayOfYear(): Int {
+//            val now = time()
+//            val timezone = ZoneId.systemDefault().rules.getOffset(Instant.now())
+//            val date = LocalDateTime.ofEpochSecond(
+//                now / 1000L,
+//                0,
+//                timezone
+//            )
+//            return date.dayOfMonth
+//        }
+//
+//        fun dayOfYear(timestamp: Long): Int {
+//            val timezone = ZoneId.systemDefault().rules.getOffset(Instant.now())
+//            val date = LocalDateTime.ofEpochSecond(
+//                timestamp / 1000L,
+//                0,
+//                timezone
+//            )
+//            return date.dayOfMonth
+//        }
+
         // Will always occur at 5am on the set day
         fun nextCharge(recurring: Recurring, _lastCharge: Long? = null): Long {
             Log.d(TAG, "trying recurring date ${recurring.id}")
@@ -169,7 +219,7 @@ class Utility {
 
             val timezone = ZoneId.systemDefault().rules.getOffset(Instant.now())
 
-//            val now = LocalDateTime.now()
+            val now = LocalDateTime.now()
             val last = LocalDateTime.ofEpochSecond(
                 lastCharge / 1000L,
                 0,
@@ -193,7 +243,11 @@ class Utility {
 
             // Type 0: Same day every month (eg. June `period`th then July `period`th then August `period`th
             if (type == 0) {
-                val nextMonth = (lastMonth % 12) + 1
+                val nextMonth =
+//                    if (now.year == lastYear && now.monthValue == lastMonth)
+//                        lastMonth // This is the first transaction and we want it to continue
+//                    else
+                        (lastMonth % 12) + 1
 
                 nextChargeDate = LocalDateTime.of(
                     if (nextMonth == 1) lastYear + 1 else lastYear,

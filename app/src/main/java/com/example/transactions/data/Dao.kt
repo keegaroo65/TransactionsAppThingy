@@ -34,10 +34,10 @@ interface HistoryDao {
 
 @Dao
 interface RecurringDao {
-    @Query("SELECT * from recurrings ORDER BY nextCharge DESC")
+    @Query("SELECT * from recurrings ORDER BY nextCharge ASC")
     fun getAllRecurrings(): Flow<List<Recurring>>
 
-    @Query("SELECT * from recurrings ORDER BY nextCharge DESC")
+    @Query("SELECT * from recurrings ORDER BY nextCharge ASC")
     fun getAllRecurringsSync(): List<Recurring>
 
     @Query("SELECT * from recurrings WHERE id = :id")
@@ -48,4 +48,7 @@ interface RecurringDao {
 
     @Update
     suspend fun update(recurring: Recurring)
+
+    @Delete
+    suspend fun delete(recurring: Recurring)
 }
