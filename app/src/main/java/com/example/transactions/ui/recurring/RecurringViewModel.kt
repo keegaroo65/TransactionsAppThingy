@@ -1,5 +1,6 @@
 package com.example.transactions.ui.recurring
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.transactions.Utility
@@ -33,8 +34,20 @@ class RecurringViewModel(
             viewModelScope.launch {
                 stateFlow.collect { recurringList ->
                     _uiState.update { currentState ->
+                        var updated = false
+
+                        if (!currentState.allUpdated && recurringList.isNotEmpty()) {
+                            updateAllNextCharges()
+
+                            updated = true
+                        }
+//                        else {
+//                            Log.d(TAG, "attempted but didn't updateAllNextCharges ${currentState.allUpdated} ${recurringList.count()}")
+//                        }
+
                         currentState.copy(
                             recurringList = recurringList,
+                            allUpdated = if (currentState.allUpdated) true else updated
 //                            selectedTransactions = List(transactionList.count()) { false },
 //                            anySelected = false
                         )
@@ -53,26 +66,25 @@ class RecurringViewModel(
         }
     }
 
-    fun resetTimestamps() {
-        viewModelScope.launch {
-            for (recurring in _recurringList.value) {
-                recurringRepository.updateRecurring(
-                    recurring.copy(
-                        firstCharge = 1704088800000,
-                        lastCharge = 1704088800000
-                    )
-                )
-            }
+    fun updateAllNextCharges() {
+        Log.d(TAG, "updateAllNextCharges ${_recurringList.value.count()}")
+        for (recurring in _recurringList.value) {
+            updateNextCharge(recurring)
         }
     }
 
-    fun updateAllNextCharges() {
-        viewModelScope.launch {
-            for (recurring in _recurringList.value) {
-                updateNextCharge(recurring)
-            }
-        }
-    }
+//    fun resetTimestamps() {
+//        viewModelScope.launch {
+//            for (recurring in _recurringList.value) {
+//                recurringRepository.updateRecurring(
+//                    recurring.copy(
+//                        firstCharge = 1704088800000,
+//                        lastCharge = 1704088800000
+//                    )
+//                )
+//            }
+//        }
+//    }
 
     companion object {
         private const val TIMEOUT_MILLIS = 5_000L
@@ -80,5 +92,6 @@ class RecurringViewModel(
 }
 
 data class RecurringUiState(
-    val recurringList: List<Recurring> = listOf()
+    val recurringList: List<Recurring> = listOf(),
+    val allUpdated: Boolean = false
 )

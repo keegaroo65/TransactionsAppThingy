@@ -89,6 +89,13 @@ class MainActivity : ComponentActivity() {
         container = AppDataContainer(context)
 
         val mainViewModel: MainViewModel by viewModels { MainViewModel.Factory }
+
+        val recurringViewModel = RecurringViewModel(
+            container.recurringRepository
+        )
+
+//        recurringViewModel.updateAllNextCharges()
+
         setContent {
             TransactionsTheme {
                 MainContainer(
@@ -99,9 +106,7 @@ class MainActivity : ComponentActivity() {
                     HistoryViewModel(
                         container.historyRepository
                     ),
-                    RecurringViewModel(
-                        container.recurringRepository
-                    ),
+                    recurringViewModel,
                     container.historyRepository,
                     container.recurringRepository,
                     SubscriptionsViewModel(
@@ -397,10 +402,17 @@ fun MainContainer(
                 else {
                     RecurringDetail(
                         recurring,
-//                        viewModel(factory = NewTransactionViewModel.Companion.NewTransactionViewModelFactory(transaction))
-                    ) {
-                        subscriptionsViewModel.test(recurring)
-                    }
+//                        viewModel(factory = NewTransactionViewModel.Companion.NewTransactionViewModelFactory(transaction)),
+                        { // deleteRecurring
+                            coroutineScope.launch {
+                                recurringRepository.deleteRecurring(recurring)
+                            }
+                            navController.navigate(NAV_RECURRING)
+                        },
+                        { // editRecurring
+
+                        }
+                    )
                 }
             }
         }

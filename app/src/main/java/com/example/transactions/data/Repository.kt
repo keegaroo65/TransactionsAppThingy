@@ -28,4 +28,6 @@ interface RecurringRepository {
     suspend fun insertRecurring(recurring: Recurring)
 
     suspend fun updateRecurring(recurring: Recurring)
+
+    suspend fun deleteRecurring(recurring: Recurring)
 }
