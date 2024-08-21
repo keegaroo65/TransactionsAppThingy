@@ -4,12 +4,11 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircleOutline
 import androidx.compose.material3.FloatingActionButton
@@ -24,9 +23,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.transactions.Utility
+import com.example.transactions.data.AppDataContainer
 import com.example.transactions.data.Recurring
 
 @Composable
@@ -37,97 +39,52 @@ fun RecurringScreen(
     deleteAllTransactions: () -> Unit
 ) {
     val uiState = viewModel.uiState.collectAsState().value
-    Column {
-//        Row (
-//            modifier = Modifier
-//                .fillMaxWidth()
-//        ) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+    ) {
+        LazyColumn {
+            itemsIndexed(uiState.recurringList) { index, recurring ->
+                RecurringCard(
+                    recurring,
+                    index,
+                    Utility.daysUntil(recurring.nextCharge)
+                ) {
+                    viewModel.updateNextCharge(recurring)
+
+                    viewRecurring(recurring)
+                }
+            }
+        }
+        FloatingActionButton(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(25.dp),
+            onClick = {
+                newRecurring()
+            }
+        ) {
+            Icon(
+                Icons.Filled.AddCircleOutline, "create a new recurring"
+            )
+        }
+    }
+
+
 //            FloatingActionButton(
 //                modifier = Modifier
+//                    .align(Alignment.BottomEnd)
 //                    .padding(25.dp),
 //                onClick = {
-//                    viewModel.resetTimestamps()
+//                    newRecurring()
 //                }
 //            ) {
 //                Icon(
-//                    Icons.Outlined.Refresh, ""
-//                )
-//            }
-//            FloatingActionButton(
-//                modifier = Modifier
-//                    .padding(25.dp),
-//                onClick = {
-//                    viewModel.resetTimestamps()
-//                    viewModel.updateAllNextCharges()
-//                }
-//            ) {
-//                Icon(
-//                    Icons.Outlined.EventRepeat, ""
-//                )
-//            }
-//            FloatingActionButton(
-//                modifier = Modifier
-//                    .padding(25.dp),
-//                onClick = {
-//                    viewModel.updateAllNextCharges()
-//                }
-//            ) {
-//                Icon(
-//                    Icons.Outlined.CalendarMonth, ""
-//                )
-//            }
-//            FloatingActionButton(
-//                modifier = Modifier
-//                    .padding(25.dp),
-//                onClick = {
-//                    deleteAllTransactions()
-//                }
-//            ) {
-//                Icon(
-//                    Icons.Outlined.DeleteSweep, ""
+//                    Icons.Filled.AddCircleOutline, ""
 //                )
 //            }
 //        }
-//
-//        HorizontalDivider()
-
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-        ) {
-            Column (
-                modifier = Modifier
-                    .verticalScroll(rememberScrollState())
-            ) {
-                for (i in 0..<uiState.recurringList.count()) {
-                    val recurring = uiState.recurringList[i]
-
-                    RecurringCard(
-                        recurring,
-                        i,
-                        Utility.daysUntil(recurring.nextCharge)
-                    ) {
-                        viewModel.updateNextCharge(recurring)
-
-                        viewRecurring(recurring)
-                    }
-                }
-            }
-
-            FloatingActionButton(
-                modifier = Modifier
-                    .align(Alignment.BottomEnd)
-                    .padding(25.dp),
-                onClick = {
-                    newRecurring()
-                }
-            ) {
-                Icon(
-                    Icons.Filled.AddCircleOutline, ""
-                )
-            }
-        }
-    }
+//    }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
@@ -251,4 +208,21 @@ private fun detailsText(
     text: String
 ) {
     Text(text)
+}
+
+@Preview
+@Composable
+fun rcPreview() {
+    val container = AppDataContainer(
+        LocalContext.current
+    )
+
+    val viewModel = RecurringViewModel(
+        container.recurringRepository
+    )
+
+    RecurringScreen(
+        viewModel,
+        {}, {}, {}
+    )
 }

@@ -92,6 +92,6 @@ class RecurringViewModel(
 }
 
 data class RecurringUiState(
-    val recurringList: List<Recurring> = listOf(),
+    val recurringList: List<Recurring> = listOf(),//Collections.nCopies(1000, Recurring(0,15.0,"title",null,true,0,5,0L,0L,0L)),
     val allUpdated: Boolean = false
 )

@@ -75,9 +75,6 @@ fun NewRecurring(
     val detailsOpened = rememberSaveable { mutableStateOf(false) }
     val detailsTouched = rememberSaveable { mutableStateOf(false) }
 
-//    val periodOpened = rememberSaveable { mutableStateOf(false) }
-//    val periodTouched = rememberSaveable { mutableStateOf(false) }
-
     val amountOpened = rememberSaveable { mutableStateOf(false) }
     val amountTouched = rememberSaveable { mutableStateOf(false) }
 
@@ -106,12 +103,6 @@ fun NewRecurring(
         .focusRequester(detailsFocus)
 
     val periodModifier = Modifier
-//        .onFocusChanged {
-//            if (it.isFocused)
-//                periodOpened.value = true
-//            else if (periodOpened.value)
-//                periodTouched.value = true
-//        }
         .focusRequester(periodFocus)
 
     val amountModifier = Modifier
@@ -229,7 +220,7 @@ fun NewRecurring(
 
                 // Period text input field
                 OutlinedTextField(
-//                    modifier = periodModifier,
+                    modifier = periodModifier,
                     value = uiState.periodText,
                     label = { Text("Period") },
                     placeholder = { Text("Period") },
@@ -288,9 +279,7 @@ fun NewRecurring(
 
                 /*
                     TODO:
-                     - Configure the above fields to be appropriately functional
                      - Add firstCharge & lastCharge fields
-                     - "charge now" button
                      - show next projected charge in this menu
                  */
 

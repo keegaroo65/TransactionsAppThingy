@@ -16,8 +16,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.expandIn
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -219,20 +217,41 @@ fun MainContainer(
         bottomBar = { AppBottomNavigation(navController = navController) }
     ) { innerPadding ->
 
-        val enterTransition: (AnimatedContentTransitionScope<NavBackStackEntry>) -> EnterTransition? = {
-            scaleIn(
+//        val enterTransition: (AnimatedContentTransitionScope<NavBackStackEntry>) -> EnterTransition? = {
+//            scaleIn(
+//                animationSpec = tween(
+//                    100,
+//                    easing = LinearEasing,
+//                )
+//            )
+//        }
+//        val exitTransition: (AnimatedContentTransitionScope<NavBackStackEntry>) -> ExitTransition? = {
+//            scaleOut(
+//                animationSpec = tween(
+//                    100,
+//                    easing = LinearEasing
+//                )
+//            )
+//        }
+        val popupEnter: (AnimatedContentTransitionScope<NavBackStackEntry>) -> EnterTransition? = {
+            fadeIn(
                 animationSpec = tween(
-                    100,
-                    easing = LinearEasing,
+                    300, easing = LinearEasing
                 )
+            ) + expandIn(
+                animationSpec = tween(300, easing = EaseIn),
+                expandFrom = Alignment.TopCenter// = AnimatedContentTransitionScope.SlideDirection.Start
             )
         }
-        val exitTransition: (AnimatedContentTransitionScope<NavBackStackEntry>) -> ExitTransition? = {
-            scaleOut(
+
+        val popupExit: (AnimatedContentTransitionScope<NavBackStackEntry>) -> ExitTransition? = {
+            fadeOut(
                 animationSpec = tween(
-                    100,
-                    easing = LinearEasing
+                    300, easing = LinearEasing
                 )
+            ) + it.slideOutOfContainer(
+                animationSpec = tween(300, easing = EaseOut),
+                towards = AnimatedContentTransitionScope.SlideDirection.End
             )
         }
 
@@ -315,26 +334,8 @@ fun MainContainer(
             // New transaction from Home page
             composable(
                 route = "$NAV_HOME/$NAV_NEW_TRANSACTION",
-                enterTransition = {
-                    fadeIn(
-                        animationSpec = tween(
-                            300, easing = LinearEasing
-                        )
-                    ) + expandIn(
-                        animationSpec = tween(300, easing = EaseIn),
-                        expandFrom = Alignment.TopCenter// = AnimatedContentTransitionScope.SlideDirection.Start
-                    )
-                },
-                exitTransition = {
-                    fadeOut(
-                        animationSpec = tween(
-                            300, easing = LinearEasing
-                        )
-                    ) + slideOutOfContainer(
-                        animationSpec = tween(300, easing = EaseOut),
-                        towards = AnimatedContentTransitionScope.SlideDirection.End
-                    )
-                }
+                enterTransition = popupEnter,
+                exitTransition = popupExit
             ) {
                 mainViewModel.clearEditTransaction()
 
@@ -347,7 +348,9 @@ fun MainContainer(
             }
             // New transaction from History page
             composable(
-                route = "$NAV_HISTORY/$NAV_NEW_TRANSACTION"
+                route = "$NAV_HISTORY/$NAV_NEW_TRANSACTION",
+                enterTransition = popupEnter,
+                exitTransition = popupExit
             ) {
                 mainViewModel.clearEditTransaction()
                 NewTransaction(
@@ -358,7 +361,9 @@ fun MainContainer(
             }
             // Edit transaction
             composable(
-                route = "$NAV_HISTORY/{transactionId}"
+                route = "$NAV_HISTORY/{transactionId}",
+                enterTransition = popupEnter,
+                exitTransition = popupExit
             ) {
                 val transactionId = it.arguments?.getString("transactionId")?.toInt() ?: -1
 
@@ -379,7 +384,9 @@ fun MainContainer(
 
             // New Recurring from Recurring page
             composable(
-                route = NAV_NEW_RECURRING
+                route = NAV_NEW_RECURRING,
+                enterTransition = popupEnter,
+                exitTransition = popupExit
             ) {
                 NewRecurring(
                     viewModel(factory = NewRecurringViewModel.Companion.NewRecurringViewModelFactory(null))
@@ -389,7 +396,9 @@ fun MainContainer(
             }
             // View Recurring from Recurring page
             composable(
-                route = "recurring/{recurringId}"
+                route = "recurring/{recurringId}",
+                enterTransition = popupEnter,
+                exitTransition = popupExit
             ) {
                 val recurringId = it.arguments?.getString("recurringId")?.toInt() ?: -1
 

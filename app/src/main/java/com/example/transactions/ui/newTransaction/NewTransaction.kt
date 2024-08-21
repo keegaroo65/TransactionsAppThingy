@@ -139,7 +139,7 @@ fun TransactionEditScreen(
                     textDecoration = TextDecoration.Underline
                 )
 
-                Column() {
+                Column {
                     if (uiState.modTimestamp != LocalDateTime.MIN) {
                         Text(
                             uiState.modTimestamp.toString() + "\n" + uiState.modTimestamp.toEpochSecond(ZoneOffset.UTC)

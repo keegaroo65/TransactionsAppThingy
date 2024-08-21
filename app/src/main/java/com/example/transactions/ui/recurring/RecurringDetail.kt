@@ -69,7 +69,7 @@ fun RecurringDetail(
             },
             modifier = Modifier
                 .align(Alignment.BottomStart)
-        ) {
+        ) { // TODO: confirmation popup before deletion
             Icon(
                 Icons.Filled.Delete, "delete"
             )

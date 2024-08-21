@@ -37,7 +37,7 @@ class NewRecurringViewModel(
             0L,
             0L,
             false,
-            false,
+            true,
             false
         )
     )
