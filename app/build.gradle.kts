@@ -77,13 +77,16 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
 
-    //Room
+    // Room
     implementation("androidx.room:room-runtime:2.6.1")
-    ksp("androidx.room:room-compiler:2.6.1")
     implementation("androidx.room:room-ktx:2.6.1")
+    ksp("androidx.room:room-compiler:2.6.1")
 
     implementation("androidx.datastore:datastore-preferences:1.1.1")
 
     implementation("androidx.transition:transition:1.5.1")
 
+    // Testing
+    testImplementation("androidx.room:room-testing:2.6.1")
+    testImplementation("com.google.truth:truth:1.1.3")
 }

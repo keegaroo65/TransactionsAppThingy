@@ -59,13 +59,13 @@ class Utility {
         }
 
         fun formatMoney(
-            money: Double
+            money: Int
         ): String {
             // Format the double as currency text (exactly 2 decimal places)
-            var text = String.format("$%.2f", abs(money))
+            var text = String.format("$%.2f", abs(money / 100.0))
 
             // Add the - before the $ if the balance is negative
-            if (money < 0.0) {
+            if (money < 0) {
                 text = "-$text"
             }
 

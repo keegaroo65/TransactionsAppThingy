@@ -44,7 +44,7 @@ fun HomeScreen(
 ) {
     val balance by viewModel.balance.collectAsState()//WithLifecycle()
 
-    Log.d(TAG, "_balance is ${balance.toString()}")
+    Log.d(TAG, "_balance is $balance")
 
 //    val balance = 0.0
 

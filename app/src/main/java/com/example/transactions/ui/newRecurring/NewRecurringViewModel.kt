@@ -22,7 +22,7 @@ import kotlinx.coroutines.launch
 class NewRecurringViewModel(
     val recurringRepository: RecurringRepository,
     val historyRepository: HistoryRepository,
-    dataStore: DataStoreManager,
+    val dataStore: DataStoreManager,
     recurring: Recurring?
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(
@@ -148,7 +148,7 @@ class NewRecurringViewModel(
 
     fun saveRecurring() {
         val state = _uiState.value
-        val amount: Double = state.amountText.toDouble() / 100
+        val amount = state.amountText.toInt()
         val now = Utility.time()
 
         val recurring = Recurring(
@@ -178,7 +178,10 @@ class NewRecurringViewModel(
                         amount = amount,
                         reason = state.titleText,
                         timestamp = Utility.time()
-                    ) // TODO: charge balance from dataStore
+                    )
+                )
+                dataStore.removeBalance(
+                    amount
                 )
             }
         }

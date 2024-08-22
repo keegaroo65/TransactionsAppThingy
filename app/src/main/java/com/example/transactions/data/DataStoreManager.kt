@@ -4,9 +4,9 @@ import android.content.Context
 import android.util.Log
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-import androidx.datastore.preferences.core.doublePreferencesKey
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.emptyPreferences
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
@@ -22,10 +22,10 @@ class DataStoreManager(context: Context) {
     private val dataStore = context.dataStore
 
     companion object {
-        val BALANCE_PREF = doublePreferencesKey("balance")
+        val BALANCE_PREF = intPreferencesKey("balance")
     }
 
-    fun getBalance() : Flow<Double> {
+    fun getBalance() : Flow<Int> {
         return dataStore.data
             .catch { exception ->
                 if (exception is IOException) {
@@ -35,18 +35,18 @@ class DataStoreManager(context: Context) {
                     throw exception
                 }
             }.map { preferences ->
-                val balance = preferences[BALANCE_PREF] ?: 0.0
+                val balance = preferences[BALANCE_PREF] ?: 0
                 balance
             }
     }
 
-    suspend fun setBalance(balance: Double) {
+    suspend fun setBalance(balance: Int) {
         dataStore.edit { preferences ->
             preferences[BALANCE_PREF] = balance
         }
     }
 
-    suspend fun addBalance(balance: Double) {
+    suspend fun addBalance(balance: Int) {
         Log.d(TAG, "added balance $balance")
         getBalance().first {
             setBalance(it + balance)
@@ -54,7 +54,7 @@ class DataStoreManager(context: Context) {
         }
     }
 
-    suspend fun removeBalance(balance: Double) {
+    suspend fun removeBalance(balance: Int) {
         getBalance().first {
             setBalance(it - balance)
             true

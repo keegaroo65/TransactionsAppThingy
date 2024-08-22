@@ -135,7 +135,7 @@ class NewTransactionViewModel(
 
     fun saveTransaction() {
         val state: NewTransactionUiState = uiState.value
-        val amount: Double = state.amountText.toDouble() / 100
+        val amount = state.amountText.toInt()
         val timestamp = Utility.time()
 
         viewModelScope.launch {

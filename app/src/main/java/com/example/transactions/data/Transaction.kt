@@ -12,7 +12,7 @@ data class Transaction(
 
     val category: Int,
 
-    val amount: Double,
+    val amount: Int,
 
     val reason: String,
 

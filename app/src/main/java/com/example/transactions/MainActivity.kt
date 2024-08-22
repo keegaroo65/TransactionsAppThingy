@@ -187,7 +187,7 @@ fun MainContainer(
                                         {
                                             historyViewModel.deselectAll()
 
-                                            var netGain = 0.0
+                                            var netGain = 0
 
                                             for (transaction in it) {
                                                 when (transaction.type) {

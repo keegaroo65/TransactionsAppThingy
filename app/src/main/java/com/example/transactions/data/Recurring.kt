@@ -9,7 +9,7 @@ data class Recurring (
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
 
-    val amount: Double,
+    val amount: Int,
 
     val title: String,
 
